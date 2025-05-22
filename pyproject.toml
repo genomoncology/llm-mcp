@@ -1,0 +1,135 @@
+[project]
+name = "llm-mcp"
+version = "0.0.1"
+description = "llm implementation of MCP for clients and servers."
+authors = [{ name = "Ian Maurer", email = "ian@genomoncology.com" }]
+readme = "README.md"
+keywords = ['python']
+requires-python = ">=3.10,<4.0"
+classifiers = [
+    "Intended Audience :: Developers",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+]
+dependencies = [
+    "llm==0.26a0",
+    "mcp[cli]>=1.9.0",
+]
+
+[project.urls]
+Homepage = "https://imaurer.github.io/llm-mcp/"
+Repository = "https://github.com/imaurer/llm-mcp"
+Documentation = "https://imaurer.github.io/llm-mcp/"
+
+[dependency-groups]
+dev = [
+    "anyio>=4.8.0",
+    "deptry>=0.23.0",
+    "ipython>=8.36.0",
+    "llm-gemini==0.20a1",
+    "mkdocs-material>=8.5.10",
+    "mkdocs>=1.4.2",
+    "mkdocstrings[python]>=0.26.1",
+    "mypy>=0.991",
+    "pre-commit>=2.20.0",
+    "pytest-asyncio>=0.26.0",
+    "pytest-bdd>=8.1.0",
+    "pytest-cov>=4.0.0",
+    "pytest-mock>=3.14.0",
+    "pytest-recording>=0.13.4",
+    "pytest>=7.2.0",
+    "ruff>=0.11.5",
+    "syrupy>=4.9.1",
+    "tox-uv>=1.11.3",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+
+
+[tool.mypy]
+files = ["src"]
+disallow_untyped_defs = false
+disallow_any_unimported = true
+no_implicit_optional = true
+check_untyped_defs = true
+warn_return_any = true
+warn_unused_ignores = true
+show_error_codes = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "--import-mode=importlib"
+asyncio_default_fixture_loop_scope = "session"
+asyncio_default_test_loop_scope = "function"
+bdd_features_base_dir = "tests/bdd/"
+
+[tool.ruff]
+target-version = "py311"
+line-length = 79
+fix = true
+unsafe-fixes = true
+
+[tool.ruff.lint]
+select = [
+    # flake8-2020
+    "YTT",
+    # flake8-bandit
+    "S",
+    # flake8-bugbear
+    "B",
+    # flake8-builtins
+    "A",
+    # flake8-comprehensions
+    "C4",
+    # flake8-debugger
+    "T10",
+    # flake8-simplify
+    "SIM",
+    # isort
+    "I",
+    # mccabe
+    "C90",
+    # pycodestyle
+    "E", "W",
+    # pyflakes
+    "F",
+    # pygrep-hooks
+    "PGH",
+    # pyupgrade
+    "UP",
+    # ruff
+    "RUF",
+    # tryceratops
+    "TRY",
+]
+ignore = [
+    # LineTooLong
+    "E501",
+    # DoNotAssignLambda
+    "E731",
+    # Exception messages
+    "TRY003",
+    # Asserts OK
+    "S101",
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101"]
+
+[tool.ruff.format]
+preview = true
+
+[tool.coverage.report]
+skip_empty = true
+
+[tool.coverage.run]
+branch = true
+source = ["src"]

@@ -1,0 +1,15 @@
+[default]
+exclude = [
+    "uv.lock",
+    "lzyank.toml",
+    ".github",
+    "*.ini",
+    ".pre-commit-config.yaml",
+    "LICENSE",
+    "codecov.yaml",
+    "mkdocs.yml",
+    "cassettes",
+]
+
+[actions]
+include = [".github/"]

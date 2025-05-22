@@ -1,0 +1,52 @@
+site_name: llm-mcp
+repo_url: https://github.com/imaurer/llm-mcp
+site_url: https://imaurer.github.io/llm-mcp
+site_description: llm implementation of MCP for clients and servers.
+site_author: Ian Maurer
+edit_uri: edit/main/docs/
+repo_name: imaurer/llm-mcp
+copyright: Maintained by <a href="https://imaurer.com">imaurer</a>.
+
+nav:
+  - Home: index.md
+  - Architecture: architecture.md
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ["src/llm_mcp"]
+theme:
+  name: material
+  feature:
+    tabs: true
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: white
+      accent: deep orange
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: black
+      accent: deep orange
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  icon:
+    repo: fontawesome/brands/github
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/imaurer/llm-mcp
+    - icon: fontawesome/brands/python
+      link: https://pypi.org/project/llm-mcp
+
+markdown_extensions:
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true

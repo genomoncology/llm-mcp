@@ -1,0 +1,964 @@
+interactions:
+- request:
+    body: '{"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{"sampling":{},"roots":{"listChanged":true}},"clientInfo":{"name":"mcp","version":"0.1.0"}},"jsonrpc":"2.0","id":0}'
+    headers:
+      accept:
+      - application/json, text/event-stream
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '194'
+      content-type:
+      - application/json
+      host:
+      - gitmcp.io
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://gitmcp.io/simonw/llm
+  response:
+    body:
+      string: 'event: message
+
+        data: {"jsonrpc":"2.0","id":0,"result":{"protocolVersion":"2025-03-26","capabilities":{"tools":{"listChanged":true}},"serverInfo":{"name":"GitMCP","version":"1.1.0"}}}
+
+
+        '
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, mcp-session-id
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - mcp-session-id
+      Access-Control-Max-Age:
+      - '86400'
+      CF-RAY:
+      - 943f56cd9c6ff501-ORD
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Type:
+      - text/event-stream
+      Date:
+      - Thu, 22 May 2025 21:17:13 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      alt-svc:
+      - h3=":443"; ma=86400
+      mcp-session-id:
+      - 1f4cd3d9c5955fe6e587470d984a55d69e79779a3c3c869cd7214a12b311daa0
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"method":"notifications/initialized","jsonrpc":"2.0"}'
+    headers:
+      accept:
+      - application/json, text/event-stream
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '54'
+      content-type:
+      - application/json
+      host:
+      - gitmcp.io
+      mcp-session-id:
+      - 1f4cd3d9c5955fe6e587470d984a55d69e79779a3c3c869cd7214a12b311daa0
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://gitmcp.io/simonw/llm
+  response:
+    body:
+      string: ''
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, mcp-session-id
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - mcp-session-id
+      Access-Control-Max-Age:
+      - '86400'
+      CF-RAY:
+      - 943f5711791ef501-ORD
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '0'
+      Date:
+      - Thu, 22 May 2025 21:17:24 GMT
+      Server:
+      - cloudflare
+      Vary:
+      - Accept-Encoding
+      alt-svc:
+      - h3=":443"; ma=86400
+    status:
+      code: 202
+      message: Accepted
+- request:
+    body: '{"method":"tools/list","jsonrpc":"2.0","id":1}'
+    headers:
+      accept:
+      - application/json, text/event-stream
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '46'
+      content-type:
+      - application/json
+      host:
+      - gitmcp.io
+      mcp-session-id:
+      - 1f4cd3d9c5955fe6e587470d984a55d69e79779a3c3c869cd7214a12b311daa0
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://gitmcp.io/simonw/llm
+  response:
+    body:
+      string: 'event: message
+
+        data: {"jsonrpc":"2.0","id":1,"result":{"tools":[{"name":"fetch_llm_documentation","description":"Fetch
+        entire documentation file from GitHub repository: simonw/llm. Useful for general
+        questions. Always call this tool first if asked about simonw/llm.","inputSchema":{"type":"object"},"annotations":{"_def":{"options":[{"_def":{"unknownKeys":"strip","catchall":{"_def":{"typeName":"ZodNever"},"~standard":{"version":1,"vendor":"zod"}},"typeName":"ZodObject"},"~standard":{"version":1,"vendor":"zod"},"_cached":null},{"_def":{"typeName":"ZodNull"},"~standard":{"version":1,"vendor":"zod"}}],"typeName":"ZodUnion"},"~standard":{"version":1,"vendor":"zod"}}},{"name":"search_llm_documentation","description":"Semantically
+        search within the fetched documentation from GitHub repository: simonw/llm.
+        Useful for specific queries.","inputSchema":{"type":"object","properties":{"query":{"type":"string","description":"The
+        search query to find relevant documentation"}},"required":["query"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"search_llm_code","description":"Search
+        for code within the GitHub repository: \"simonw/llm\" using the GitHub Search
+        API (exact match). Returns matching files for you to query further if relevant.","inputSchema":{"type":"object","properties":{"query":{"type":"string","description":"The
+        search query to find relevant code files"},"page":{"type":"number","description":"Page
+        number to retrieve (starting from 1). Each page contains 30 results."}},"required":["query"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"fetch_generic_url_content","description":"Generic
+        tool to fetch content from any absolute URL, respecting robots.txt rules.
+        Use this to retrieve referenced urls (absolute urls) that were mentioned in
+        previously fetched documentation.","inputSchema":{"type":"object","properties":{"url":{"type":"string","description":"The
+        URL of the document or page to fetch"}},"required":["url"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}}]}}
+
+
+        '
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, mcp-session-id
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - mcp-session-id
+      Access-Control-Max-Age:
+      - '86400'
+      CF-RAY:
+      - 943f5711ba0bf501-ORD
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Type:
+      - text/event-stream
+      Date:
+      - Thu, 22 May 2025 21:17:24 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      alt-svc:
+      - h3=":443"; ma=86400
+      mcp-session-id:
+      - 1f4cd3d9c5955fe6e587470d984a55d69e79779a3c3c869cd7214a12b311daa0
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/json, text/event-stream
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      host:
+      - gitmcp.io
+      mcp-session-id:
+      - 1f4cd3d9c5955fe6e587470d984a55d69e79779a3c3c869cd7214a12b311daa0
+      user-agent:
+      - python-httpx/0.28.1
+    method: DELETE
+    uri: https://gitmcp.io/simonw/llm
+  response:
+    body:
+      string: '{"jsonrpc":"2.0","error":{"code":-32000,"message":"Method not allowed"},"id":null}'
+    headers:
+      CF-RAY:
+      - 943f5750ad4df501-ORD
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '82'
+      Content-Type:
+      - text/plain;charset=UTF-8
+      Date:
+      - Thu, 22 May 2025 21:17:34 GMT
+      Server:
+      - cloudflare
+      Vary:
+      - Accept-Encoding
+      alt-svc:
+      - h3=":443"; ma=86400
+    status:
+      code: 405
+      message: Method Not Allowed
+- request:
+    body: '{"messages":[{"role":"user","content":"According to the `llm`, what are
+      the aliases for the model named ''gpt-3.5-turbo-16k''? Respond **only** with
+      JSON formatted as {\"aliases\": [\"alias1\", \"alias2\", ...]}."}],"model":"gpt-4.1","stream":false,"tools":[{"type":"function","function":{"name":"fetch_llm_documentation","description":"Fetch
+      entire documentation file from GitHub repository: simonw/llm. Useful for general
+      questions. Always call this tool first if asked about simonw/llm.","parameters":{}}},{"type":"function","function":{"name":"search_llm_documentation","description":"Semantically
+      search within the fetched documentation from GitHub repository: simonw/llm.
+      Useful for specific queries.","parameters":{"type":"object","properties":{"query":{"type":"string","description":"The
+      search query to find relevant documentation"}},"required":["query"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}}},{"type":"function","function":{"name":"search_llm_code","description":"Search
+      for code within the GitHub repository: \"simonw/llm\" using the GitHub Search
+      API (exact match). Returns matching files for you to query further if relevant.","parameters":{"type":"object","properties":{"query":{"type":"string","description":"The
+      search query to find relevant code files"},"page":{"type":"number","description":"Page
+      number to retrieve (starting from 1). Each page contains 30 results."}},"required":["query"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}}},{"type":"function","function":{"name":"fetch_generic_url_content","description":"Generic
+      tool to fetch content from any absolute URL, respecting robots.txt rules. Use
+      this to retrieve referenced urls (absolute urls) that were mentioned in previously
+      fetched documentation.","parameters":{"type":"object","properties":{"url":{"type":"string","description":"The
+      URL of the document or page to fetch"}},"required":["url"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}}}]}'
+    headers:
+      accept:
+      - application/json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '2039'
+      content-type:
+      - application/json
+      host:
+      - api.openai.com
+      user-agent:
+      - OpenAI/Python 1.79.0
+      x-stainless-arch:
+      - arm64
+      x-stainless-async:
+      - 'false'
+      x-stainless-lang:
+      - python
+      x-stainless-os:
+      - MacOS
+      x-stainless-package-version:
+      - 1.79.0
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+      x-stainless-runtime:
+      - CPython
+      x-stainless-runtime-version:
+      - 3.12.7
+    method: POST
+    uri: https://api.openai.com/v1/chat/completions
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwAAAP//jFPBjpswFLzzFdY7hygkkGy47ba9VL3salWp26yQYx7gxNhe27SNovx7
+        hUmA7KZSOSDL45k3b559DAgBnkNKgFXUsVqL8IGu6P2TXNq75OXrl4fo8c29RNVjcniaLX7DpGWo
+        7Q6Zu7CmTNVaoONKdjAzSB22qtEqXq3ju2USe6BWOYqWVmoXxtMonM/mSTiLwyg+MyvFGVpIyc+A
+        EEKO/t96lDn+gZTMJpedGq2lJULaHyIEjBLtDlBruXVUOpgMIFPSoWxty0aIEeCUEhmjQgyFu+84
+        Wg9BUSGy7/OleuZ6vftxr5r9quGs3H369vx5VK+TPmhvqGgk6wMa4f1++q4YISBp7bkWqWFVJkSd
+        5Yo1NUpHb2gRAtSUHm77gOMG3ho0hw2kGx/4YpqErjFbFUbLPaGCU4t2Aye4kjkFt9avo7gMFo2l
+        4mOOVErVWfNBvp6RUz8zoUpt1Na+o0LBJbdVZpBaH8V4IsHFiLcAzdXQQRtVa5c5tUdfdBElnSoM
+        l3JA53dn0ClHxYgVLyY39LIcHeX+VvQXkVFWYT5QhwtJm5yrERCMev/o5pZ21z+X5f/IDwBjqB3m
+        mTaYc3bd8XDMYPtm/3WsT9kbBovmF2eYOY6mnUeOBW1E95rAHqzDOiu4LNFow/2TgkJnjLElsvU8
+        yiE4BX8BAAD//wMAGxNzHVwEAAA=
+    headers:
+      CF-RAY:
+      - 943f57531d506089-ORD
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 22 May 2025 21:17:35 GMT
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - __cf_bm=Vo93J3DInuR8DaurhsEhmA.yD.VRbf6OSBwh.OaTJXo-1747948655-1.0.1.1-JEXKHnMdgeCcnQ1Ake8fcz4U6M0TEvs6ITsbUZOcepNI00RpmNDgGr_hpHye2mIv4ISQw91I_E7jv5.e8F2kgk5g04iab.dhq68f6bMd2lc;
+        path=/; expires=Thu, 22-May-25 21:47:35 GMT; domain=.api.openai.com; HttpOnly;
+        Secure; SameSite=None
+      - _cfuvid=TllwRU_EiQL3qGlM9IoabK0qDmbI9Kdk_volNAQvL0k-1747948655258-0.0.1.1-604800000;
+        path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      access-control-expose-headers:
+      - X-Request-ID
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      openai-organization:
+      - genomoncology-2v7ur8
+      openai-processing-ms:
+      - '563'
+      openai-version:
+      - '2020-10-01'
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      x-envoy-upstream-service-time:
+      - '566'
+      x-ratelimit-limit-requests:
+      - '5000'
+      x-ratelimit-limit-tokens:
+      - '800000'
+      x-ratelimit-remaining-requests:
+      - '4999'
+      x-ratelimit-remaining-tokens:
+      - '799955'
+      x-ratelimit-reset-requests:
+      - 12ms
+      x-ratelimit-reset-tokens:
+      - 3ms
+      x-request-id:
+      - req_51c00dd053692255977ed8ae3ffa9b0c
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{"sampling":{},"roots":{"listChanged":true}},"clientInfo":{"name":"mcp","version":"0.1.0"}},"jsonrpc":"2.0","id":0}'
+    headers:
+      accept:
+      - application/json, text/event-stream
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '194'
+      content-type:
+      - application/json
+      host:
+      - gitmcp.io
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://gitmcp.io/simonw/llm
+  response:
+    body:
+      string: 'event: message
+
+        data: {"jsonrpc":"2.0","id":0,"result":{"protocolVersion":"2025-03-26","capabilities":{"tools":{"listChanged":true}},"serverInfo":{"name":"GitMCP","version":"1.1.0"}}}
+
+
+        '
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, mcp-session-id
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - mcp-session-id
+      Access-Control-Max-Age:
+      - '86400'
+      CF-RAY:
+      - 943f5758381e1160-ORD
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Type:
+      - text/event-stream
+      Date:
+      - Thu, 22 May 2025 21:17:36 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      alt-svc:
+      - h3=":443"; ma=86400
+      mcp-session-id:
+      - bde52a678fd39dfc9db86b0f2f7295b6d628377d0b55de78d4d10a620744f04e
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"method":"notifications/initialized","jsonrpc":"2.0"}'
+    headers:
+      accept:
+      - application/json, text/event-stream
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '54'
+      content-type:
+      - application/json
+      host:
+      - gitmcp.io
+      mcp-session-id:
+      - bde52a678fd39dfc9db86b0f2f7295b6d628377d0b55de78d4d10a620744f04e
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://gitmcp.io/simonw/llm
+  response:
+    body:
+      string: ''
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, mcp-session-id
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - mcp-session-id
+      Access-Control-Max-Age:
+      - '86400'
+      CF-RAY:
+      - 943f579bbfc21160-ORD
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '0'
+      Date:
+      - Thu, 22 May 2025 21:17:46 GMT
+      Server:
+      - cloudflare
+      Vary:
+      - Accept-Encoding
+      alt-svc:
+      - h3=":443"; ma=86400
+    status:
+      code: 202
+      message: Accepted
+- request:
+    body: '{"method":"tools/call","params":{"name":"search_llm_documentation","arguments":{"query":"gpt-3.5-turbo-16k
+      aliases"}},"jsonrpc":"2.0","id":1}'
+    headers:
+      accept:
+      - application/json, text/event-stream
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '141'
+      content-type:
+      - application/json
+      host:
+      - gitmcp.io
+      mcp-session-id:
+      - bde52a678fd39dfc9db86b0f2f7295b6d628377d0b55de78d4d10a620744f04e
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://gitmcp.io/simonw/llm
+  response:
+    body:
+      string: 'event: message
+
+        data: {"jsonrpc":"2.0","id":1,"result":{"searchQuery":"gpt-3.5-turbo-16k aliases","content":[{"type":"text","text":"##
+        Query\n\ngpt-3.5-turbo-16k aliases.\n\n## Response\n\n### Sources:\nImportant:
+        you can fetch the full content of any source using the fetch_url_content tool\n\n####
+        (simonw/llm/docs/openai-models.md)[https://raw.githubusercontent.com/simonw/llm/main/docs/openai-models.md]
+        (Score: 0.56)\n- \n## OpenAI completion models\n\nThe `gpt-3.5-turbo-instruct`
+        model is a little different - it is a completion model rather than a chat
+        model, described in [the OpenAI completions documentation](https://platform.openai.com/docs/api-reference/completions/create).\n\nCompletion
+        models can be called with the `-o logprobs 3` option (not supported by chat
+        models) which will cause LLM to store 3 log probabilities for each returned
+        token in the SQLite database. Consult [this issue](https://github.com/simonw/llm/issues/284#issuecomment-1724772704)
+        for details on how to read these values.\n\n(openai-extra-models)=\n\n\n-
+        \n## OpenAI language models\n\nRun `llm models` for a full list of available
+        models. The OpenAI models supported by LLM are:\n\n<!-- [[[cog\nfrom click.testing
+        import CliRunner\nfrom llm.cli import cli\nresult = CliRunner().invoke(cli,
+        [\"models\", \"list\"])\nmodels = [line for line in result.output.split(\"\\n\")
+        if line.startswith(\"OpenAI \")]\ncog.out(\"```\\n{}\\n```\".format(\"\\n\".join(models)))\n]]]
+        -->\n```\nOpenAI Chat: gpt-4o (aliases: 4o)\nOpenAI Chat: chatgpt-4o-latest
+        (aliases: chatgpt-4o)\nOpenAI Chat: gpt-4o-mini (aliases: 4o-mini)\nOpenAI
+        Chat: gpt-4o-audio-preview\nOpenAI Chat: gpt-4o-audio-preview-2024-12-17\nOpenAI
+        Chat: gpt-4o-audio-preview-2024-10-01\nOpenAI Chat: gpt-4o-mini-audio-preview\nOpenAI
+        Chat: gpt-4o-mini-audio-preview-2024-12-17\nOpenAI Chat: gpt-4.1 (aliases:
+        4.1)\nOpenAI Chat: gpt-4.1-mini (aliases: 4.1-mini)\nOpenAI Chat: gpt-4.1-nano
+        (aliases: 4.1-nano)\nOpenAI Chat: gpt-3.5-turbo (aliases: 3.5, chatgpt)\nOpenAI
+        Chat: gpt-3.5-turbo-16k (aliases: chatgpt-16k, 3.5-16k)\nOpenAI Chat: gpt-4
+        (aliases: 4, gpt4)\nOpenAI Chat: gpt-4-32k (aliases: 4-32k)\nOpenAI Chat:
+        gpt-4-1106-preview\nOpenAI Chat: gpt-4-0125-preview\nOpenAI Chat: gpt-4-turbo-2024-04-09\nOpenAI
+        Chat: gpt-4-turbo (aliases: gpt-4-turbo-preview, 4-turbo, 4t)\nOpenAI Chat:
+        gpt-4.5-preview-2025-02-27\nOpenAI Chat: gpt-4.5-preview (aliases: gpt-4.5)\nOpenAI
+        Chat: o1\nOpenAI Chat: o1-2024-12-17\nOpenAI Chat: o1-preview\nOpenAI Chat:
+        o1-mini\nOpenAI Chat: o3-mini\nOpenAI Chat: o3\nOpenAI Chat: o4-mini\nOpenAI
+        Completion: gpt-3.5-turbo-instruct (aliases: 3.5-instruct, chatgpt-instruct)\n```\n<!--
+        [[[end]]] -->\n\nSee [the OpenAI models documentation](https://platform.openai.com/docs/models)
+        for details of each of these.\n\n`gpt-4o-mini` (aliased to `4o-mini`) is the
+        least expensive model, and is the default for if you don''t specify a model
+        at all. Consult [OpenAI''s model documentation](https://platform.openai.com/docs/models)
+        for details of the other models.\n\n\n#### (simonw/llm/llms.txt)[https://raw.githubusercontent.com/simonw/llm/main/llms.txt]
+        (Score: 0.52)\n- t.upper()\n\nmodel = llm.get_model(\"gpt-4.1-mini\")\nresponse
+        = model.prompt(\"Convert panda to upper\", tools=[upper])\ntool_calls = response.tool_calls()\n```\n\nKey
+        technical terms and topics include:\n\n- **LLM**: Large Language Model\n-
+        **Model**: A specific LLM instance, e.g., GPT-4o-mini\n- **Prompt**: The input
+        text to the model\n- **Response**: The output from the model\n- **Tools**:
+        Functions that can be executed by the model\n- **Attachments**: Files or URLs
+        that can be passed to the model\n- **Schemas**: JSON schema definitions for
+        the response\n- **Conversations**: Ongoing discussions with the model\n\nThe
+        API supports various features, including:\n\n* **Lazy Loading**: Responses
+        are not evaluated until the `text()` method is called\n* **Async Models**:
+        Support for asynchronous models using `llm.get_async_model()`\n* **Streaming
+        Responses**: Support for streaming responses as they are generated\n* **Token
+        Usage**: Methods for tracking token usage, e.g., `response.usage()` \n\nThe
+        document also lists several functions for managing models, aliases, and defaults:\n\n*
+        `llm.set_alias(alias, model_id)`: Define a new alias\n* `llm.remove_alias(alias)`:
+        Remove an alias\n* `llm.set_default_model(model_id)`: Set the default model\n*
+        `llm.get_default_model()`: Get the currently configured default model\n\n\n-
+        [related-tools.md](https://raw.githubusercontent.com/simonw/llm/main/docs/related-tools.md):
+        Related Tools for Working with LLMs\nThis document describes tools designed
+        to be used with Large Language Models (LLMs). It covers three main tools:
+        `strip-tags`, `ttok`, and `symbex`. `strip-tags` is a command for stripping
+        HTML tags, useful for working within token budget limits. `ttok` counts OpenAI
+        tokens and can truncate input to a desired number of tokens. `symbex` searches
+        for symbols in Python codebases, allowing for code extraction and piping into
+        LLMs for various tasks. These tools enhance the functionality and usability
+        of LLMs in different applications.\n\nExample usage of `strip-tags` and `ttok`:\n```bash\ncurl
+        -s https://www.nytimes.com/ \\\n\n- URLs as input to the model.\n- **System
+        Prompts**: Set a system prompt to influence the model''s responses.\n\nKey
+        technical terms and topics extracted from the document:\n- LLM command line
+        tool\n- Large language models (LLMs)\n- Model options and configuration\n-
+        Attachments and multi-modal input\n- System prompts and conversation management\n-
+        Default options for models\n- Prompt templates\n- Tool execution and external
+        functions\n- Logging and conversation history\n\n\n\n#\n- rovides an overview
+        of OpenAI models supported by LLM (Large Language Model). It explains how
+        to configure and use OpenAI models, including language models and embedding
+        models. To use OpenAI models, users need to obtain an API key from OpenAI''s
+        site and configure it using the `llm keys set openai` command. The document
+        lists available OpenAI models, such as `gpt-4o`, `gpt-4`, and `gpt-3.5-turbo`,
+        and describes their features, including system prompts, attachments, schemas,
+        and model options. For embedding models, it lists the supported models like
+        `ada-002`, `3-small`, and `3-large`, and explains the characteristics of each
+        model, such as vector size.\n\n    Example code:\n    ```bash\n    llm keys
+        set openai\n    ```\n    and \n    ```bash\n    llm -m 0613 ''What is the
+        capital of France?''\n    ```\n\n    The document also explains how to add
+        support for new OpenAI models by creating an `extra-openai-models.yaml` configuration
+        file.\n\n    KEY TERMS:\n    1. OpenAI models\n    2. LLM configuration\n    3.
+        API key\n    4. Language models\n    5. Embedding models\n    6. Model features\n    7.
+        System prompts\n    8. Model options\n    9. Extra models configuration\n    10.
+        Completion models\n\n\n- [other-models.md](https://raw.githubusercontent.com/simonw/llm/main/docs/other-models.md):
+        Using Other Models with LLM\nThe document discusses how to use models other
+        than OpenAI with the LLM tool. It explains that LLM supports OpenAI models
+        by default, but users can install plugins to add support for other models.
+        For example, the `llm-gpt4all` plugin can be installed to add 17 models from
+        the GPT4All project. Additionally, users can add OpenAI-API-compatible models
+        using a configuration file. The document provides instructions on how to install
+        and use local models, as well as how to configure OpenAI-compatible models.
+        This includes specifying the model ID, model name, API base, and other optional
+        settings such as API keys, headers, and features like vision, audio, or structured
+        output.\n\nTo add a model, users can run a command like `llm install l\n\n####
+        (simonw/llm/docs/usage.md)[https://raw.githubusercontent.com/simonw/llm/main/docs/usage.md]
+        (Score: 0.51)\n- \n\nSome models are completion models - rather than being
+        tuned to respond to chat style prompts, they are designed to complete a sentence
+        or paragraph.\n\nAn example of this is the `gpt-3.5-turbo-instruct` OpenAI
+        model.\n\nYou can prompt that model the same way as the chat models, but be
+        aware that the prompt format that works best is likely to differ.\n\n```bash\nllm
+        -m gpt-3.5-turbo-instruct ''Reasons to tame a wild beaver:''\n```\n\n(usage-chat)=\n\n\n\n####
+        (simonw/llm/docs/setup.md)[https://raw.githubusercontent.com/simonw/llm/main/docs/setup.md]
+        (Score: 0.50)\n- \n\nMany LLM models require an API key. These API keys can
+        be provided to this tool using several different mechanisms.\n\nYou can obtain
+        an API key for OpenAI''s language models from [the API keys page](https://platform.openai.com/api-keys)
+        on their site.\n\n#\n\n#### (simonw/llm/docs/tools.md)[https://raw.githubusercontent.com/simonw/llm/main/docs/tools.md]
+        (Score: 0.50)\n- \n\nMany Large Language Models have been trained to execute
+        tools as part of responding to a prompt. LLM supports tool usage with both
+        the command-line interface and the Python API.\n\n#\n\n#### (simonw/llm/docs/schemas.md)[https://raw.githubusercontent.com/simonw/llm/main/docs/schemas.md]
+        (Score: 0.50)\n- \n\nLarge Language Models are very good at producing structured
+        output as JSON or other formats. LLM''s **schemas** feature allows you to
+        define the exact structure of JSON data you want to receive from a model.\n\nThis
+        feature is supported by models from OpenAI, Anthropic, Google Gemini and can
+        be implemented for others {ref}`via plugins <advanced-model-plugins-schemas>`.\n\nThis
+        page describes schemas used via the `llm` command-line tool. Schemas can also
+        be used from the {ref}`Python API <python-api-schemas>`.\n\n(schemas-tutorial)=\n\n#\n\n####
+        (simonw/llm/docs/aliases.md)[https://raw.githubusercontent.com/simonw/llm/main/docs/aliases.md]
+        (Score: 0.49)\n- \n# Model aliases\n\nLLM supports model aliases, which allow
+        you to refer to a model by a short name instead of its full ID.\n\n## Listing
+        aliases\n\nTo list current aliases, run this:\n\n```bash\nllm aliases\n```\nExample
+        output:\n\n<!-- [[[cog\nfrom click.testing import CliRunner\nfrom llm.cli
+        import cli\nresult = CliRunner().invoke(cli, [\"aliases\", \"list\"])\ncog.out(\"```\\n{}```\".format(result.output))\n]]]
+        -->\n```\n4o                  : gpt-4o\nchatgpt-4o          : chatgpt-4o-latest\n4o-mini             :
+        gpt-4o-mini\n4.1                 : gpt-4.1\n4.1-mini            : gpt-4.1-mini\n4.1-nano            :
+        gpt-4.1-nano\n3.5                 : gpt-3.5-turbo\nchatgpt             : gpt-3.5-turbo\nchatgpt-16k         :
+        gpt-3.5-turbo-16k\n3.5-16k             : gpt-3.5-turbo-16k\n4                   :
+        gpt-4\ngpt4                : gpt-4\n4-32k               : gpt-4-32k\ngpt-4-turbo-preview
+        : gpt-4-turbo\n4-turbo             : gpt-4-turbo\n4t                  : gpt-4-turbo\ngpt-4.5             :
+        gpt-4.5-preview\n3.5-instruct        : gpt-3.5-turbo-instruct\nchatgpt-instruct    :
+        gpt-3.5-turbo-instruct\nada                 : text-embedding-ada-002 (embedding)\nada-002             :
+        text-embedding-ada-002 (embedding)\n3-small             : text-embedding-3-small
+        (embedding)\n3-large             : text-embedding-3-large (embedding)\n3-small-512         :
+        text-embedding-3-small-512 (embedding)\n3-large-256         : text-embedding-3-large-256
+        (embedding)\n3-large-1024        : text-embedding-3-large-1024 (embedding)\n```\n<!--
+        [[[end]]] -->\n\nAdd `--json` to get that list back as JSON:\n\n```bash\nllm
+        aliases list --json\n```\nExample output:\n```json\n{\n    \"3.5\": \"gpt-3.5-turbo\",\n    \"chatgpt\":
+        \"gpt-3.5-turbo\",\n    \"4\": \"gpt-4\",\n    \"gpt4\": \"gpt-4\",\n    \"ada\":
+        \"ada-002\"\n}\n```\n\n\n"}]}}
+
+
+        '
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, mcp-session-id
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - mcp-session-id
+      Access-Control-Max-Age:
+      - '86400'
+      CF-RAY:
+      - 943f579bf8221160-ORD
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Type:
+      - text/event-stream
+      Date:
+      - Thu, 22 May 2025 21:17:46 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      alt-svc:
+      - h3=":443"; ma=86400
+      mcp-session-id:
+      - bde52a678fd39dfc9db86b0f2f7295b6d628377d0b55de78d4d10a620744f04e
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/json, text/event-stream
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      host:
+      - gitmcp.io
+      mcp-session-id:
+      - bde52a678fd39dfc9db86b0f2f7295b6d628377d0b55de78d4d10a620744f04e
+      user-agent:
+      - python-httpx/0.28.1
+    method: DELETE
+    uri: https://gitmcp.io/simonw/llm
+  response:
+    body:
+      string: '{"jsonrpc":"2.0","error":{"code":-32000,"message":"Method not allowed"},"id":null}'
+    headers:
+      CF-RAY:
+      - 943f57fe5f2c1160-ORD
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '82'
+      Content-Type:
+      - text/plain;charset=UTF-8
+      Date:
+      - Thu, 22 May 2025 21:18:01 GMT
+      Server:
+      - cloudflare
+      Vary:
+      - Accept-Encoding
+      alt-svc:
+      - h3=":443"; ma=86400
+    status:
+      code: 405
+      message: Method Not Allowed
+- request:
+    body: '{"messages":[{"role":"user","content":"According to the `llm`, what are
+      the aliases for the model named ''gpt-3.5-turbo-16k''? Respond **only** with
+      JSON formatted as {\"aliases\": [\"alias1\", \"alias2\", ...]}."},{"role":"assistant","tool_calls":[{"type":"function","id":"call_V26oTip9jYAouk7uicgjCLTD","function":{"name":"search_llm_documentation","arguments":"{\"query\":
+      \"gpt-3.5-turbo-16k aliases\"}"}}]},{"role":"tool","tool_call_id":"call_V26oTip9jYAouk7uicgjCLTD","content":"##
+      Query\n\ngpt-3.5-turbo-16k aliases.\n\n## Response\n\n### Sources:\nImportant:
+      you can fetch the full content of any source using the fetch_url_content tool\n\n####
+      (simonw/llm/docs/openai-models.md)[https://raw.githubusercontent.com/simonw/llm/main/docs/openai-models.md]
+      (Score: 0.56)\n- \n## OpenAI completion models\n\nThe `gpt-3.5-turbo-instruct`
+      model is a little different - it is a completion model rather than a chat model,
+      described in [the OpenAI completions documentation](https://platform.openai.com/docs/api-reference/completions/create).\n\nCompletion
+      models can be called with the `-o logprobs 3` option (not supported by chat
+      models) which will cause LLM to store 3 log probabilities for each returned
+      token in the SQLite database. Consult [this issue](https://github.com/simonw/llm/issues/284#issuecomment-1724772704)
+      for details on how to read these values.\n\n(openai-extra-models)=\n\n\n- \n##
+      OpenAI language models\n\nRun `llm models` for a full list of available models.
+      The OpenAI models supported by LLM are:\n\n<!-- [[[cog\nfrom click.testing import
+      CliRunner\nfrom llm.cli import cli\nresult = CliRunner().invoke(cli, [\"models\",
+      \"list\"])\nmodels = [line for line in result.output.split(\"\\n\") if line.startswith(\"OpenAI
+      \")]\ncog.out(\"```\\n{}\\n```\".format(\"\\n\".join(models)))\n]]] -->\n```\nOpenAI
+      Chat: gpt-4o (aliases: 4o)\nOpenAI Chat: chatgpt-4o-latest (aliases: chatgpt-4o)\nOpenAI
+      Chat: gpt-4o-mini (aliases: 4o-mini)\nOpenAI Chat: gpt-4o-audio-preview\nOpenAI
+      Chat: gpt-4o-audio-preview-2024-12-17\nOpenAI Chat: gpt-4o-audio-preview-2024-10-01\nOpenAI
+      Chat: gpt-4o-mini-audio-preview\nOpenAI Chat: gpt-4o-mini-audio-preview-2024-12-17\nOpenAI
+      Chat: gpt-4.1 (aliases: 4.1)\nOpenAI Chat: gpt-4.1-mini (aliases: 4.1-mini)\nOpenAI
+      Chat: gpt-4.1-nano (aliases: 4.1-nano)\nOpenAI Chat: gpt-3.5-turbo (aliases:
+      3.5, chatgpt)\nOpenAI Chat: gpt-3.5-turbo-16k (aliases: chatgpt-16k, 3.5-16k)\nOpenAI
+      Chat: gpt-4 (aliases: 4, gpt4)\nOpenAI Chat: gpt-4-32k (aliases: 4-32k)\nOpenAI
+      Chat: gpt-4-1106-preview\nOpenAI Chat: gpt-4-0125-preview\nOpenAI Chat: gpt-4-turbo-2024-04-09\nOpenAI
+      Chat: gpt-4-turbo (aliases: gpt-4-turbo-preview, 4-turbo, 4t)\nOpenAI Chat:
+      gpt-4.5-preview-2025-02-27\nOpenAI Chat: gpt-4.5-preview (aliases: gpt-4.5)\nOpenAI
+      Chat: o1\nOpenAI Chat: o1-2024-12-17\nOpenAI Chat: o1-preview\nOpenAI Chat:
+      o1-mini\nOpenAI Chat: o3-mini\nOpenAI Chat: o3\nOpenAI Chat: o4-mini\nOpenAI
+      Completion: gpt-3.5-turbo-instruct (aliases: 3.5-instruct, chatgpt-instruct)\n```\n<!--
+      [[[end]]] -->\n\nSee [the OpenAI models documentation](https://platform.openai.com/docs/models)
+      for details of each of these.\n\n`gpt-4o-mini` (aliased to `4o-mini`) is the
+      least expensive model, and is the default for if you don''t specify a model
+      at all. Consult [OpenAI''s model documentation](https://platform.openai.com/docs/models)
+      for details of the other models.\n\n\n#### (simonw/llm/llms.txt)[https://raw.githubusercontent.com/simonw/llm/main/llms.txt]
+      (Score: 0.52)\n- t.upper()\n\nmodel = llm.get_model(\"gpt-4.1-mini\")\nresponse
+      = model.prompt(\"Convert panda to upper\", tools=[upper])\ntool_calls = response.tool_calls()\n```\n\nKey
+      technical terms and topics include:\n\n- **LLM**: Large Language Model\n- **Model**:
+      A specific LLM instance, e.g., GPT-4o-mini\n- **Prompt**: The input text to
+      the model\n- **Response**: The output from the model\n- **Tools**: Functions
+      that can be executed by the model\n- **Attachments**: Files or URLs that can
+      be passed to the model\n- **Schemas**: JSON schema definitions for the response\n-
+      **Conversations**: Ongoing discussions with the model\n\nThe API supports various
+      features, including:\n\n* **Lazy Loading**: Responses are not evaluated until
+      the `text()` method is called\n* **Async Models**: Support for asynchronous
+      models using `llm.get_async_model()`\n* **Streaming Responses**: Support for
+      streaming responses as they are generated\n* **Token Usage**: Methods for tracking
+      token usage, e.g., `response.usage()` \n\nThe document also lists several functions
+      for managing models, aliases, and defaults:\n\n* `llm.set_alias(alias, model_id)`:
+      Define a new alias\n* `llm.remove_alias(alias)`: Remove an alias\n* `llm.set_default_model(model_id)`:
+      Set the default model\n* `llm.get_default_model()`: Get the currently configured
+      default model\n\n\n- [related-tools.md](https://raw.githubusercontent.com/simonw/llm/main/docs/related-tools.md):
+      Related Tools for Working with LLMs\nThis document describes tools designed
+      to be used with Large Language Models (LLMs). It covers three main tools: `strip-tags`,
+      `ttok`, and `symbex`. `strip-tags` is a command for stripping HTML tags, useful
+      for working within token budget limits. `ttok` counts OpenAI tokens and can
+      truncate input to a desired number of tokens. `symbex` searches for symbols
+      in Python codebases, allowing for code extraction and piping into LLMs for various
+      tasks. These tools enhance the functionality and usability of LLMs in different
+      applications.\n\nExample usage of `strip-tags` and `ttok`:\n```bash\ncurl -s
+      https://www.nytimes.com/ \\\n\n- URLs as input to the model.\n- **System Prompts**:
+      Set a system prompt to influence the model''s responses.\n\nKey technical terms
+      and topics extracted from the document:\n- LLM command line tool\n- Large language
+      models (LLMs)\n- Model options and configuration\n- Attachments and multi-modal
+      input\n- System prompts and conversation management\n- Default options for models\n-
+      Prompt templates\n- Tool execution and external functions\n- Logging and conversation
+      history\n\n\n\n#\n- rovides an overview of OpenAI models supported by LLM (Large
+      Language Model). It explains how to configure and use OpenAI models, including
+      language models and embedding models. To use OpenAI models, users need to obtain
+      an API key from OpenAI''s site and configure it using the `llm keys set openai`
+      command. The document lists available OpenAI models, such as `gpt-4o`, `gpt-4`,
+      and `gpt-3.5-turbo`, and describes their features, including system prompts,
+      attachments, schemas, and model options. For embedding models, it lists the
+      supported models like `ada-002`, `3-small`, and `3-large`, and explains the
+      characteristics of each model, such as vector size.\n\n    Example code:\n    ```bash\n    llm
+      keys set openai\n    ```\n    and \n    ```bash\n    llm -m 0613 ''What is the
+      capital of France?''\n    ```\n\n    The document also explains how to add support
+      for new OpenAI models by creating an `extra-openai-models.yaml` configuration
+      file.\n\n    KEY TERMS:\n    1. OpenAI models\n    2. LLM configuration\n    3.
+      API key\n    4. Language models\n    5. Embedding models\n    6. Model features\n    7.
+      System prompts\n    8. Model options\n    9. Extra models configuration\n    10.
+      Completion models\n\n\n- [other-models.md](https://raw.githubusercontent.com/simonw/llm/main/docs/other-models.md):
+      Using Other Models with LLM\nThe document discusses how to use models other
+      than OpenAI with the LLM tool. It explains that LLM supports OpenAI models by
+      default, but users can install plugins to add support for other models. For
+      example, the `llm-gpt4all` plugin can be installed to add 17 models from the
+      GPT4All project. Additionally, users can add OpenAI-API-compatible models using
+      a configuration file. The document provides instructions on how to install and
+      use local models, as well as how to configure OpenAI-compatible models. This
+      includes specifying the model ID, model name, API base, and other optional settings
+      such as API keys, headers, and features like vision, audio, or structured output.\n\nTo
+      add a model, users can run a command like `llm install l\n\n#### (simonw/llm/docs/usage.md)[https://raw.githubusercontent.com/simonw/llm/main/docs/usage.md]
+      (Score: 0.51)\n- \n\nSome models are completion models - rather than being tuned
+      to respond to chat style prompts, they are designed to complete a sentence or
+      paragraph.\n\nAn example of this is the `gpt-3.5-turbo-instruct` OpenAI model.\n\nYou
+      can prompt that model the same way as the chat models, but be aware that the
+      prompt format that works best is likely to differ.\n\n```bash\nllm -m gpt-3.5-turbo-instruct
+      ''Reasons to tame a wild beaver:''\n```\n\n(usage-chat)=\n\n\n\n#### (simonw/llm/docs/setup.md)[https://raw.githubusercontent.com/simonw/llm/main/docs/setup.md]
+      (Score: 0.50)\n- \n\nMany LLM models require an API key. These API keys can
+      be provided to this tool using several different mechanisms.\n\nYou can obtain
+      an API key for OpenAI''s language models from [the API keys page](https://platform.openai.com/api-keys)
+      on their site.\n\n#\n\n#### (simonw/llm/docs/tools.md)[https://raw.githubusercontent.com/simonw/llm/main/docs/tools.md]
+      (Score: 0.50)\n- \n\nMany Large Language Models have been trained to execute
+      tools as part of responding to a prompt. LLM supports tool usage with both the
+      command-line interface and the Python API.\n\n#\n\n#### (simonw/llm/docs/schemas.md)[https://raw.githubusercontent.com/simonw/llm/main/docs/schemas.md]
+      (Score: 0.50)\n- \n\nLarge Language Models are very good at producing structured
+      output as JSON or other formats. LLM''s **schemas** feature allows you to define
+      the exact structure of JSON data you want to receive from a model.\n\nThis feature
+      is supported by models from OpenAI, Anthropic, Google Gemini and can be implemented
+      for others {ref}`via plugins <advanced-model-plugins-schemas>`.\n\nThis page
+      describes schemas used via the `llm` command-line tool. Schemas can also be
+      used from the {ref}`Python API <python-api-schemas>`.\n\n(schemas-tutorial)=\n\n#\n\n####
+      (simonw/llm/docs/aliases.md)[https://raw.githubusercontent.com/simonw/llm/main/docs/aliases.md]
+      (Score: 0.49)\n- \n# Model aliases\n\nLLM supports model aliases, which allow
+      you to refer to a model by a short name instead of its full ID.\n\n## Listing
+      aliases\n\nTo list current aliases, run this:\n\n```bash\nllm aliases\n```\nExample
+      output:\n\n<!-- [[[cog\nfrom click.testing import CliRunner\nfrom llm.cli import
+      cli\nresult = CliRunner().invoke(cli, [\"aliases\", \"list\"])\ncog.out(\"```\\n{}```\".format(result.output))\n]]]
+      -->\n```\n4o                  : gpt-4o\nchatgpt-4o          : chatgpt-4o-latest\n4o-mini             :
+      gpt-4o-mini\n4.1                 : gpt-4.1\n4.1-mini            : gpt-4.1-mini\n4.1-nano            :
+      gpt-4.1-nano\n3.5                 : gpt-3.5-turbo\nchatgpt             : gpt-3.5-turbo\nchatgpt-16k         :
+      gpt-3.5-turbo-16k\n3.5-16k             : gpt-3.5-turbo-16k\n4                   :
+      gpt-4\ngpt4                : gpt-4\n4-32k               : gpt-4-32k\ngpt-4-turbo-preview
+      : gpt-4-turbo\n4-turbo             : gpt-4-turbo\n4t                  : gpt-4-turbo\ngpt-4.5             :
+      gpt-4.5-preview\n3.5-instruct        : gpt-3.5-turbo-instruct\nchatgpt-instruct    :
+      gpt-3.5-turbo-instruct\nada                 : text-embedding-ada-002 (embedding)\nada-002             :
+      text-embedding-ada-002 (embedding)\n3-small             : text-embedding-3-small
+      (embedding)\n3-large             : text-embedding-3-large (embedding)\n3-small-512         :
+      text-embedding-3-small-512 (embedding)\n3-large-256         : text-embedding-3-large-256
+      (embedding)\n3-large-1024        : text-embedding-3-large-1024 (embedding)\n```\n<!--
+      [[[end]]] -->\n\nAdd `--json` to get that list back as JSON:\n\n```bash\nllm
+      aliases list --json\n```\nExample output:\n```json\n{\n    \"3.5\": \"gpt-3.5-turbo\",\n    \"chatgpt\":
+      \"gpt-3.5-turbo\",\n    \"4\": \"gpt-4\",\n    \"gpt4\": \"gpt-4\",\n    \"ada\":
+      \"ada-002\"\n}\n```\n\n\n"}],"model":"gpt-4.1","stream":false,"tools":[{"type":"function","function":{"name":"fetch_llm_documentation","description":"Fetch
+      entire documentation file from GitHub repository: simonw/llm. Useful for general
+      questions. Always call this tool first if asked about simonw/llm.","parameters":{}}},{"type":"function","function":{"name":"search_llm_documentation","description":"Semantically
+      search within the fetched documentation from GitHub repository: simonw/llm.
+      Useful for specific queries.","parameters":{"type":"object","properties":{"query":{"type":"string","description":"The
+      search query to find relevant documentation"}},"required":["query"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}}},{"type":"function","function":{"name":"search_llm_code","description":"Search
+      for code within the GitHub repository: \"simonw/llm\" using the GitHub Search
+      API (exact match). Returns matching files for you to query further if relevant.","parameters":{"type":"object","properties":{"query":{"type":"string","description":"The
+      search query to find relevant code files"},"page":{"type":"number","description":"Page
+      number to retrieve (starting from 1). Each page contains 30 results."}},"required":["query"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}}},{"type":"function","function":{"name":"fetch_generic_url_content","description":"Generic
+      tool to fetch content from any absolute URL, respecting robots.txt rules. Use
+      this to retrieve referenced urls (absolute urls) that were mentioned in previously
+      fetched documentation.","parameters":{"type":"object","properties":{"url":{"type":"string","description":"The
+      URL of the document or page to fetch"}},"required":["url"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}}}]}'
+    headers:
+      accept:
+      - application/json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '13860'
+      content-type:
+      - application/json
+      host:
+      - api.openai.com
+      user-agent:
+      - OpenAI/Python 1.79.0
+      x-stainless-arch:
+      - arm64
+      x-stainless-async:
+      - 'false'
+      x-stainless-lang:
+      - python
+      x-stainless-os:
+      - MacOS
+      x-stainless-package-version:
+      - 1.79.0
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+      x-stainless-runtime:
+      - CPython
+      x-stainless-runtime-version:
+      - 3.12.7
+    method: POST
+    uri: https://api.openai.com/v1/chat/completions
+  response:
+    body:
+      string: !!binary |
+        H4sIAAAAAAAAAwAAAP//jFJNi9swEL37V4g52yH2Oh+b40JpF5btpYdCHYx2NHbUyJKQ5NIS8t+L
+        7Gzs/YK9CKQ37+m9mTkljIEUsGOABx6wsyq74xuOPeF3t5U/v+V5c3Q/mq/39/3j5uELpJFhnn4T
+        hmfWAk1nFQVp9AijIx4oquabcnNbbtfbYgA6I0hFWmtDVi7yrFgWq2xZZnl5YR6MRPKwY78Sxhg7
+        DWf0qAX9hR1bps8vHXnPW4LdtYgxcEbFF+DeSx+4DpBOIBodSA+2TxVwJbknX8W/qiFHNJWvjxWk
+        rIKbxWq87M9zDUdN73nMoHulZgDX2gQeezC431+Q89WvMq115sm/okIjtfSH2hH3RkdvPhgLA3pO
+        GNsPfelfRAXrTGdDHcyRhu9uVkU5CsI0iwku8gsYTOBqTitX6TuKtaDApfKz3gJyPJCYuNMgeC+k
+        mQHJLPdbO+9pj9mlbj8jPwGIZAOJ2joSEl9GnsocxV39qOza58EweHJ/JFIdJLk4C0EN79W4ReD/
+        +UBd3UjdkrNOjqvU2BoR14S3RS4gOSf/AQAA//8DADsk3YRUAwAA
+    headers:
+      CF-RAY:
+      - 943f57ff1e5b5d77-ORD
+      Connection:
+      - keep-alive
+      Content-Encoding:
+      - gzip
+      Content-Type:
+      - application/json
+      Date:
+      - Thu, 22 May 2025 21:18:03 GMT
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - __cf_bm=qsHYcBkFhwbEfK9SNcL8QhI_fROGQ.sJK9Lj9VA5cqI-1747948683-1.0.1.1-aVSKQzSyLCOsSwC6SMjmdPil7Pv9MJaWlQVwQGdSmMIxmEe0jsVviizgt03aEfy7wnpZLZYJr0lu7rNBmhA7AzhNIx2Z2.3awHGT6NZW3eE;
+        path=/; expires=Thu, 22-May-25 21:48:03 GMT; domain=.api.openai.com; HttpOnly;
+        Secure; SameSite=None
+      - _cfuvid=VrIe5Kf.ivHoOz2gWU.3cIW55.hKD8PolkXchv4r43U-1747948683183-0.0.1.1-604800000;
+        path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      access-control-expose-headers:
+      - X-Request-ID
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      openai-organization:
+      - genomoncology-2v7ur8
+      openai-processing-ms:
+      - '974'
+      openai-version:
+      - '2020-10-01'
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      x-envoy-upstream-service-time:
+      - '977'
+      x-ratelimit-limit-requests:
+      - '5000'
+      x-ratelimit-limit-tokens:
+      - '800000'
+      x-ratelimit-remaining-requests:
+      - '4999'
+      x-ratelimit-remaining-tokens:
+      - '797148'
+      x-ratelimit-reset-requests:
+      - 12ms
+      x-ratelimit-reset-tokens:
+      - 213ms
+      x-request-id:
+      - req_b0ef9b45e8073f401bb3b6ad3d325482
+    status:
+      code: 200
+      message: OK
+version: 1

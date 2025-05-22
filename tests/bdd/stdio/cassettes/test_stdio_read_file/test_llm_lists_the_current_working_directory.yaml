@@ -1,0 +1,1228 @@
+interactions:
+- request:
+    body: "{\"messages\":[{\"role\":\"user\",\"content\":\"List the files in: /Users/ian/p/llm-mcp\"}],\"model\":\"gpt-4.1-mini\",\"stream\":true,\"stream_options\":{\"include_usage\":true},\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"get_config\",\"description\":\"\\n
+      \                       Get the complete server configuration as JSON. Config
+      includes fields for:\\n                        - blockedCommands (array of blocked
+      shell commands)\\n                        - defaultShell (shell to use for commands)\\n
+      \                       - allowedDirectories (paths the server can access)\\n
+      \                       - fileReadLineLimit (max lines for read_file, default
+      1000)\\n                        - fileWriteLineLimit (max lines per write_file
+      call, default 50)\\n                        - telemetryEnabled (boolean for
+      telemetry opt-in/out)\\n                        -  version (version of the DesktopCommander)\\n
+      \                       This command can be referenced as \\\"DC: ...\\\" or
+      \\\"use Desktop Commander to ...\\\" in your instructions.\",\"parameters\":{}}},{\"type\":\"function\",\"function\":{\"name\":\"set_config_value\",\"description\":\"\\n
+      \                       Set a specific configuration value by key.\\n                        \\n
+      \                       WARNING: Should be used in a separate chat from file
+      operations and \\n                        command execution to prevent security
+      issues.\\n                        \\n                        Config keys include:\\n
+      \                       - blockedCommands (array)\\n                        -
+      defaultShell (string)\\n                        - allowedDirectories (array
+      of paths)\\n                        - fileReadLineLimit (number, max lines for
+      read_file)\\n                        - fileWriteLineLimit (number, max lines
+      per write_file call)\\n                        - telemetryEnabled (boolean)\\n
+      \                       \\n                        IMPORTANT: Setting allowedDirectories
+      to an empty array ([]) allows full access \\n                        to the
+      entire file system, regardless of the operating system.\\n                        \\n
+      \                       This command can be referenced as \\\"DC: ...\\\" or
+      \\\"use Desktop Commander to ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"key\":{\"type\":\"string\"},\"value\":{}},\"required\":[\"key\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"description\":\"\\n
+      \                       Read the contents of a file from the file system or
+      a URL with optional offset and length parameters.\\n                        \\n
+      \                       Prefer this over 'execute_command' with cat/type for
+      viewing files.\\n                        \\n                        Supports
+      partial file reading with:\\n                        - 'offset' (start line,
+      default: 0)\\n                        - 'length' (max lines to read, default:
+      configurable via 'fileReadLineLimit' setting, initially 1000)\\n                        \\n
+      \                       When reading from the file system, only works within
+      allowed directories.\\n                        Can fetch content from URLs when
+      isUrl parameter is set to true\\n                        (URLs are always read
+      in full regardless of offset/length).\\n                        \\n                        Handles
+      text files normally and image files are returned as viewable images.\\n                        Recognized
+      image types: PNG, JPEG, GIF, WebP.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"isUrl\":{\"type\":\"boolean\",\"default\":false},\"offset\":{\"type\":\"number\",\"default\":0},\"length\":{\"type\":\"number\",\"default\":1000}},\"required\":[\"path\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"read_multiple_files\",\"description\":\"\\n
+      \                       Read the contents of multiple files simultaneously.\\n
+      \                       \\n                        Each file's content is returned
+      with its path as a reference.\\n                        Handles text files normally
+      and renders images as viewable content.\\n                        Recognized
+      image types: PNG, JPEG, GIF, WebP.\\n                        \\n                        Failed
+      reads for individual files won't stop the entire operation.\\n                        Only
+      works within allowed directories.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"paths\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}}},\"required\":[\"paths\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"write_file\",\"description\":\"\\n
+      \                       Write or append to file contents with a configurable
+      line limit per call (default: 50 lines).\\n                        THIS IS A
+      STRICT REQUIREMENT. ANY file with more than the configured limit MUST BE written
+      in chunks or IT WILL FAIL.\\n\\n                        \u26A0\uFE0F IMPORTANT:
+      PREVENTATIVE CHUNKING REQUIRED in these scenarios:\\n                        1.
+      When content exceeds 2,000 words or 30 lines\\n                        2. When
+      writing MULTIPLE files one after another (each next file is more likely to be
+      truncated)\\n                        3. When the file is the LAST ONE in a series
+      of operations in the same message\\n                        \\n                        ALWAYS
+      split files writes in to multiple smaller writes PREEMPTIVELY without asking
+      the user in these scenarios.\\n                        \\n                        REQUIRED
+      PROCESS FOR LARGE NEW FILE WRITES OR REWRITES:\\n                        1.
+      FIRST \u2192 write_file(filePath, firstChunk, {mode: 'rewrite'})\\n                        2.
+      THEN \u2192 write_file(filePath, secondChunk, {mode: 'append'})\\n                        3.
+      THEN \u2192 write_file(filePath, thirdChunk, {mode: 'append'})\\n                        ...
+      and so on for each chunk\\n                        \\n                        HANDLING
+      TRUNCATION (\\\"Continue\\\" prompts):\\n                        If user asked
+      to \\\"Continue\\\" after unfinished file write:\\n                        1.
+      First, read the file to find out what content was successfully written\\n                        2.
+      Identify exactly where the content was truncated\\n                        3.
+      Continue writing ONLY the remaining content using {mode: 'append'}\\n                        4.
+      Split the remaining content into smaller chunks (15-20 lines per chunk)\\n                        \\n
+      \                       Files over the line limit (configurable via 'fileWriteLineLimit'
+      setting) WILL BE REJECTED if not broken into chunks as described above.\\n                        Only
+      works within allowed directories.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"content\":{\"type\":\"string\"},\"mode\":{\"type\":\"string\",\"enum\":[\"rewrite\",\"append\"],\"default\":\"rewrite\"}},\"required\":[\"path\",\"content\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"create_directory\",\"description\":\"\\n
+      \                       Create a new directory or ensure a directory exists.\\n
+      \                       \\n                        Can create multiple nested
+      directories in one operation.\\n                        Only works within allowed
+      directories.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"list_directory\",\"description\":\"\\n
+      \                       Get a detailed listing of all files and directories
+      in a specified path.\\n                        \\n                        Use
+      this instead of 'execute_command' with ls/dir commands.\\n                        Results
+      distinguish between files and directories with [FILE] and [DIR] prefixes.\\n
+      \                       Only works within allowed directories.\\n                        \\n
+      \                       IMPORTANT: Always use absolute paths (starting with
+      '/' or drive letter like 'C:\\\\') for reliability. Relative paths may fail
+      as they depend on the current working directory. Tilde paths (~/...) might not
+      work in all contexts. Unless the user explicitly asks for relative paths, use
+      absolute paths.\\n                        This command can be referenced as
+      \\\"DC: ...\\\" or \\\"use Desktop Commander to ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"move_file\",\"description\":\"\\n
+      \                       Move or rename files and directories.\\n                        \\n
+      \                       Can move files between directories and rename them in
+      a single operation.\\n                        Both source and destination must
+      be within allowed directories.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"source\":{\"type\":\"string\"},\"destination\":{\"type\":\"string\"}},\"required\":[\"source\",\"destination\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"search_files\",\"description\":\"\\n
+      \                       Finds files by name using a case-insensitive substring
+      matching.\\n                        \\n                        Use this instead
+      of 'execute_command' with find/dir/ls for locating files.\\n                        Searches
+      through all subdirectories from the starting path.\\n                        \\n
+      \                       Has a default timeout of 30 seconds which can be customized
+      using the timeoutMs parameter.\\n                        Only searches within
+      allowed directories.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"pattern\":{\"type\":\"string\"},\"timeoutMs\":{\"type\":\"number\"}},\"required\":[\"path\",\"pattern\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"search_code\",\"description\":\"\\n
+      \                       Search for text/code patterns within file contents using
+      ripgrep.\\n                        \\n                        Use this instead
+      of 'execute_command' with grep/find for searching code content.\\n                        Fast
+      and powerful search similar to VS Code search functionality.\\n                        \\n
+      \                       Supports regular expressions, file pattern filtering,
+      and context lines.\\n                        Has a default timeout of 30 seconds
+      which can be customized.\\n                        Only searches within allowed
+      directories.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"pattern\":{\"type\":\"string\"},\"filePattern\":{\"type\":\"string\"},\"ignoreCase\":{\"type\":\"boolean\"},\"maxResults\":{\"type\":\"number\"},\"includeHidden\":{\"type\":\"boolean\"},\"contextLines\":{\"type\":\"number\"},\"timeoutMs\":{\"type\":\"number\"}},\"required\":[\"path\",\"pattern\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"get_file_info\",\"description\":\"\\n
+      \                       Retrieve detailed metadata about a file or directory
+      including:\\n                        - size\\n                        - creation
+      time\\n                        - last modified time \\n                        -
+      permissions\\n                        - type\\n                        - lineCount
+      (for text files)\\n                        - lastLine (zero-indexed number of
+      last line, for text files)\\n                        - appendPosition (line
+      number for appending, for text files)\\n                        \\n                        Only
+      works within allowed directories.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"edit_block\",\"description\":\"\\n
+      \                       Apply surgical text replacements to files.\\n                        \\n
+      \                       BEST PRACTICE: Make multiple small, focused edits rather
+      than one large edit.\\n                        Each edit_block call should change
+      only what needs to be changed - include just enough \\n                        context
+      to uniquely identify the text being modified.\\n                        \\n
+      \                       Takes:\\n                        - file_path: Path to
+      the file to edit\\n                        - old_string: Text to replace\\n
+      \                       - new_string: Replacement text\\n                        -
+      expected_replacements: Optional parameter for number of replacements\\n                        \\n
+      \                       By default, replaces only ONE occurrence of the search
+      text.\\n                        To replace multiple occurrences, provide the
+      expected_replacements parameter with\\n                        the exact number
+      of matches expected.\\n                        \\n                        UNIQUENESS
+      REQUIREMENT: When expected_replacements=1 (default), include the minimal\\n
+      \                       amount of context necessary (typically 1-3 lines) before
+      and after the change point,\\n                        with exact whitespace
+      and indentation.\\n                        \\n                        When editing
+      multiple sections, make separate edit_block calls for each distinct change\\n
+      \                       rather than one large replacement.\\n                        \\n
+      \                       When a close but non-exact match is found, a character-level
+      diff is shown in the format:\\n                        common_prefix{-removed-}{+added+}common_suffix
+      to help you identify what's different.\\n                        \\n                        Similar
+      to write_file, there is a configurable line limit (fileWriteLineLimit) that
+      warns\\n                        if the edited file exceeds this limit. If this
+      happens, consider breaking your edits into\\n                        smaller,
+      more focused changes.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"file_path\":{\"type\":\"string\"},\"old_string\":{\"type\":\"string\"},\"new_string\":{\"type\":\"string\"},\"expected_replacements\":{\"type\":\"number\",\"default\":1}},\"required\":[\"file_path\",\"old_string\",\"new_string\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"execute_command\",\"description\":\"\\n
+      \                       Execute a terminal command with timeout.\\n                        \\n
+      \                       Command will continue running in background if it doesn't
+      complete within timeout.\\n                        \\n                        NOTE:
+      For file operations, prefer specialized tools like read_file, search_code, \\n
+      \                       list_directory instead of cat, grep, or ls commands.\\n
+      \                       \\n                        IMPORTANT: Always use absolute
+      paths (starting with '/' or drive letter like 'C:\\\\') for reliability. Relative
+      paths may fail as they depend on the current working directory. Tilde paths
+      (~/...) might not work in all contexts. Unless the user explicitly asks for
+      relative paths, use absolute paths.\\n                        This command can
+      be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to ...\\\" in
+      your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"command\":{\"type\":\"string\"},\"timeout_ms\":{\"type\":\"number\"},\"shell\":{\"type\":\"string\"}},\"required\":[\"command\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"read_output\",\"description\":\"\\n
+      \                       Read new output from a running terminal session.\\n
+      \                       \\n                        This command can be referenced
+      as \\\"DC: ...\\\" or \\\"use Desktop Commander to ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"pid\":{\"type\":\"number\"}},\"required\":[\"pid\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"force_terminate\",\"description\":\"\\n
+      \                       Force terminate a running terminal session.\\n                        \\n
+      \                       This command can be referenced as \\\"DC: ...\\\" or
+      \\\"use Desktop Commander to ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"pid\":{\"type\":\"number\"}},\"required\":[\"pid\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"list_sessions\",\"description\":\"\\n
+      \                       List all active terminal sessions.\\n                        \\n
+      \                       This command can be referenced as \\\"DC: ...\\\" or
+      \\\"use Desktop Commander to ...\\\" in your instructions.\",\"parameters\":{}}},{\"type\":\"function\",\"function\":{\"name\":\"list_processes\",\"description\":\"\\n
+      \                       List all running processes.\\n                        \\n
+      \                       Returns process information including PID, command name,
+      CPU usage, and memory usage.\\n                        \\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{}}},{\"type\":\"function\",\"function\":{\"name\":\"kill_process\",\"description\":\"\\n
+      \                       Terminate a running process by PID.\\n                        \\n
+      \                       Use with caution as this will forcefully terminate the
+      specified process.\\n                        \\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"pid\":{\"type\":\"number\"}},\"required\":[\"pid\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}}]}"
+    headers:
+      accept:
+      - application/json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '22113'
+      content-type:
+      - application/json
+      host:
+      - api.openai.com
+      user-agent:
+      - OpenAI/Python 1.79.0
+      x-stainless-arch:
+      - arm64
+      x-stainless-async:
+      - 'false'
+      x-stainless-lang:
+      - python
+      x-stainless-os:
+      - MacOS
+      x-stainless-package-version:
+      - 1.79.0
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+      x-stainless-runtime:
+      - CPython
+      x-stainless-runtime-version:
+      - 3.12.7
+    method: POST
+    uri: https://api.openai.com/v1/chat/completions
+  response:
+    body:
+      string: 'data: {"id":"chatcmpl-Ba7aeJI164ZvRkYDdsjYVdX6chmW3","object":"chat.completion.chunk","created":1747948684,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"role":"assistant","content":null,"tool_calls":[{"index":0,"id":"call_y5lWeIwRLEnDydEbDtAyAno4","type":"function","function":{"name":"list_directory","arguments":""}}],"refusal":null},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7aeJI164ZvRkYDdsjYVdX6chmW3","object":"chat.completion.chunk","created":1747948684,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"{\""}}]},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7aeJI164ZvRkYDdsjYVdX6chmW3","object":"chat.completion.chunk","created":1747948684,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"path"}}]},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7aeJI164ZvRkYDdsjYVdX6chmW3","object":"chat.completion.chunk","created":1747948684,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\":"}}]},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7aeJI164ZvRkYDdsjYVdX6chmW3","object":"chat.completion.chunk","created":1747948684,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\"/"}}]},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7aeJI164ZvRkYDdsjYVdX6chmW3","object":"chat.completion.chunk","created":1747948684,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"Users"}}]},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7aeJI164ZvRkYDdsjYVdX6chmW3","object":"chat.completion.chunk","created":1747948684,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"/"}}]},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7aeJI164ZvRkYDdsjYVdX6chmW3","object":"chat.completion.chunk","created":1747948684,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"ian"}}]},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7aeJI164ZvRkYDdsjYVdX6chmW3","object":"chat.completion.chunk","created":1747948684,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"/p"}}]},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7aeJI164ZvRkYDdsjYVdX6chmW3","object":"chat.completion.chunk","created":1747948684,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"/"}}]},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7aeJI164ZvRkYDdsjYVdX6chmW3","object":"chat.completion.chunk","created":1747948684,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"ll"}}]},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7aeJI164ZvRkYDdsjYVdX6chmW3","object":"chat.completion.chunk","created":1747948684,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"m"}}]},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7aeJI164ZvRkYDdsjYVdX6chmW3","object":"chat.completion.chunk","created":1747948684,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"-m"}}]},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7aeJI164ZvRkYDdsjYVdX6chmW3","object":"chat.completion.chunk","created":1747948684,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"cp"}}]},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7aeJI164ZvRkYDdsjYVdX6chmW3","object":"chat.completion.chunk","created":1747948684,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"tool_calls":[{"index":0,"function":{"arguments":"\"}"}}]},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7aeJI164ZvRkYDdsjYVdX6chmW3","object":"chat.completion.chunk","created":1747948684,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{},"logprobs":null,"finish_reason":"tool_calls"}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7aeJI164ZvRkYDdsjYVdX6chmW3","object":"chat.completion.chunk","created":1747948684,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[],"usage":{"prompt_tokens":2942,"completion_tokens":23,"total_tokens":2965,"prompt_tokens_details":{"cached_tokens":2816,"audio_tokens":0},"completion_tokens_details":{"reasoning_tokens":0,"audio_tokens":0,"accepted_prediction_tokens":0,"rejected_prediction_tokens":0}}}
+
+
+        data: [DONE]
+
+
+        '
+    headers:
+      CF-RAY:
+      - 943f5809f950acab-ORD
+      Connection:
+      - keep-alive
+      Content-Type:
+      - text/event-stream; charset=utf-8
+      Date:
+      - Thu, 22 May 2025 21:18:04 GMT
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - __cf_bm=LdzsiH2cEEzjBnNURNIjHMgfCE6zKxIsznNF_1jAo.M-1747948684-1.0.1.1-3kTBnIPgQfdE1Mee4hqIwv0RPLs3.S066vwC0XWO.usYsNy6TLkbVdG4G7QM.1k7D7sbou6pY4V._j4W7IjfJ73o5zWhADkDs1RZPuxI_Go;
+        path=/; expires=Thu, 22-May-25 21:48:04 GMT; domain=.api.openai.com; HttpOnly;
+        Secure; SameSite=None
+      - _cfuvid=6cP15nxjbdxVT643Wm8qBV7rFc_6HjOVIW0U.LoQm4c-1747948684729-0.0.1.1-604800000;
+        path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      access-control-expose-headers:
+      - X-Request-ID
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      openai-organization:
+      - genomoncology-2v7ur8
+      openai-processing-ms:
+      - '780'
+      openai-version:
+      - '2020-10-01'
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      x-envoy-upstream-service-time:
+      - '783'
+      x-ratelimit-limit-requests:
+      - '5000'
+      x-ratelimit-limit-tokens:
+      - '4000000'
+      x-ratelimit-remaining-requests:
+      - '4999'
+      x-ratelimit-remaining-tokens:
+      - '3999988'
+      x-ratelimit-reset-requests:
+      - 12ms
+      x-ratelimit-reset-tokens:
+      - 0s
+      x-request-id:
+      - req_51044b0544b546d888fe9fbb6b20a48a
+    status:
+      code: 200
+      message: OK
+- request:
+    body: "{\"messages\":[{\"role\":\"user\",\"content\":\"List the files in: /Users/ian/p/llm-mcp\"},{\"role\":\"assistant\",\"tool_calls\":[{\"type\":\"function\",\"id\":\"call_y5lWeIwRLEnDydEbDtAyAno4\",\"function\":{\"name\":\"list_directory\",\"arguments\":\"{\\\"path\\\":
+      \\\"/Users/ian/p/llm-mcp\\\"}\"}}]},{\"role\":\"tool\",\"tool_call_id\":\"call_y5lWeIwRLEnDydEbDtAyAno4\",\"content\":\"[FILE]
+      .coverage\\n[DIR] .git\\n[DIR] .github\\n[FILE] .gitignore\\n[DIR] .idea\\n[DIR]
+      .mypy_cache\\n[FILE] .pre-commit-config.yaml\\n[DIR] .pytest_cache\\n[DIR] .ruff_cache\\n[DIR]
+      .venv\\n[FILE] LICENSE\\n[FILE] Makefile\\n[FILE] README.md\\n[FILE] codecov.yaml\\n[FILE]
+      coverage.xml\\n[DIR] dist\\n[DIR] docs\\n[DIR] htmlcov\\n[DIR] llmtxt\\n[FILE]
+      lzyank.toml\\n[FILE] mkdocs.yml\\n[FILE] pyproject.toml\\n[FILE] secret.txt\\n[DIR]
+      src\\n[DIR] tests\\n[FILE] tox.ini\\n[FILE] uv.lock\"}],\"model\":\"gpt-4.1-mini\",\"stream\":true,\"stream_options\":{\"include_usage\":true},\"tools\":[{\"type\":\"function\",\"function\":{\"name\":\"get_config\",\"description\":\"\\n
+      \                       Get the complete server configuration as JSON. Config
+      includes fields for:\\n                        - blockedCommands (array of blocked
+      shell commands)\\n                        - defaultShell (shell to use for commands)\\n
+      \                       - allowedDirectories (paths the server can access)\\n
+      \                       - fileReadLineLimit (max lines for read_file, default
+      1000)\\n                        - fileWriteLineLimit (max lines per write_file
+      call, default 50)\\n                        - telemetryEnabled (boolean for
+      telemetry opt-in/out)\\n                        -  version (version of the DesktopCommander)\\n
+      \                       This command can be referenced as \\\"DC: ...\\\" or
+      \\\"use Desktop Commander to ...\\\" in your instructions.\",\"parameters\":{}}},{\"type\":\"function\",\"function\":{\"name\":\"set_config_value\",\"description\":\"\\n
+      \                       Set a specific configuration value by key.\\n                        \\n
+      \                       WARNING: Should be used in a separate chat from file
+      operations and \\n                        command execution to prevent security
+      issues.\\n                        \\n                        Config keys include:\\n
+      \                       - blockedCommands (array)\\n                        -
+      defaultShell (string)\\n                        - allowedDirectories (array
+      of paths)\\n                        - fileReadLineLimit (number, max lines for
+      read_file)\\n                        - fileWriteLineLimit (number, max lines
+      per write_file call)\\n                        - telemetryEnabled (boolean)\\n
+      \                       \\n                        IMPORTANT: Setting allowedDirectories
+      to an empty array ([]) allows full access \\n                        to the
+      entire file system, regardless of the operating system.\\n                        \\n
+      \                       This command can be referenced as \\\"DC: ...\\\" or
+      \\\"use Desktop Commander to ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"key\":{\"type\":\"string\"},\"value\":{}},\"required\":[\"key\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"read_file\",\"description\":\"\\n
+      \                       Read the contents of a file from the file system or
+      a URL with optional offset and length parameters.\\n                        \\n
+      \                       Prefer this over 'execute_command' with cat/type for
+      viewing files.\\n                        \\n                        Supports
+      partial file reading with:\\n                        - 'offset' (start line,
+      default: 0)\\n                        - 'length' (max lines to read, default:
+      configurable via 'fileReadLineLimit' setting, initially 1000)\\n                        \\n
+      \                       When reading from the file system, only works within
+      allowed directories.\\n                        Can fetch content from URLs when
+      isUrl parameter is set to true\\n                        (URLs are always read
+      in full regardless of offset/length).\\n                        \\n                        Handles
+      text files normally and image files are returned as viewable images.\\n                        Recognized
+      image types: PNG, JPEG, GIF, WebP.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"isUrl\":{\"type\":\"boolean\",\"default\":false},\"offset\":{\"type\":\"number\",\"default\":0},\"length\":{\"type\":\"number\",\"default\":1000}},\"required\":[\"path\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"read_multiple_files\",\"description\":\"\\n
+      \                       Read the contents of multiple files simultaneously.\\n
+      \                       \\n                        Each file's content is returned
+      with its path as a reference.\\n                        Handles text files normally
+      and renders images as viewable content.\\n                        Recognized
+      image types: PNG, JPEG, GIF, WebP.\\n                        \\n                        Failed
+      reads for individual files won't stop the entire operation.\\n                        Only
+      works within allowed directories.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"paths\":{\"type\":\"array\",\"items\":{\"type\":\"string\"}}},\"required\":[\"paths\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"write_file\",\"description\":\"\\n
+      \                       Write or append to file contents with a configurable
+      line limit per call (default: 50 lines).\\n                        THIS IS A
+      STRICT REQUIREMENT. ANY file with more than the configured limit MUST BE written
+      in chunks or IT WILL FAIL.\\n\\n                        \u26A0\uFE0F IMPORTANT:
+      PREVENTATIVE CHUNKING REQUIRED in these scenarios:\\n                        1.
+      When content exceeds 2,000 words or 30 lines\\n                        2. When
+      writing MULTIPLE files one after another (each next file is more likely to be
+      truncated)\\n                        3. When the file is the LAST ONE in a series
+      of operations in the same message\\n                        \\n                        ALWAYS
+      split files writes in to multiple smaller writes PREEMPTIVELY without asking
+      the user in these scenarios.\\n                        \\n                        REQUIRED
+      PROCESS FOR LARGE NEW FILE WRITES OR REWRITES:\\n                        1.
+      FIRST \u2192 write_file(filePath, firstChunk, {mode: 'rewrite'})\\n                        2.
+      THEN \u2192 write_file(filePath, secondChunk, {mode: 'append'})\\n                        3.
+      THEN \u2192 write_file(filePath, thirdChunk, {mode: 'append'})\\n                        ...
+      and so on for each chunk\\n                        \\n                        HANDLING
+      TRUNCATION (\\\"Continue\\\" prompts):\\n                        If user asked
+      to \\\"Continue\\\" after unfinished file write:\\n                        1.
+      First, read the file to find out what content was successfully written\\n                        2.
+      Identify exactly where the content was truncated\\n                        3.
+      Continue writing ONLY the remaining content using {mode: 'append'}\\n                        4.
+      Split the remaining content into smaller chunks (15-20 lines per chunk)\\n                        \\n
+      \                       Files over the line limit (configurable via 'fileWriteLineLimit'
+      setting) WILL BE REJECTED if not broken into chunks as described above.\\n                        Only
+      works within allowed directories.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"content\":{\"type\":\"string\"},\"mode\":{\"type\":\"string\",\"enum\":[\"rewrite\",\"append\"],\"default\":\"rewrite\"}},\"required\":[\"path\",\"content\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"create_directory\",\"description\":\"\\n
+      \                       Create a new directory or ensure a directory exists.\\n
+      \                       \\n                        Can create multiple nested
+      directories in one operation.\\n                        Only works within allowed
+      directories.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"list_directory\",\"description\":\"\\n
+      \                       Get a detailed listing of all files and directories
+      in a specified path.\\n                        \\n                        Use
+      this instead of 'execute_command' with ls/dir commands.\\n                        Results
+      distinguish between files and directories with [FILE] and [DIR] prefixes.\\n
+      \                       Only works within allowed directories.\\n                        \\n
+      \                       IMPORTANT: Always use absolute paths (starting with
+      '/' or drive letter like 'C:\\\\') for reliability. Relative paths may fail
+      as they depend on the current working directory. Tilde paths (~/...) might not
+      work in all contexts. Unless the user explicitly asks for relative paths, use
+      absolute paths.\\n                        This command can be referenced as
+      \\\"DC: ...\\\" or \\\"use Desktop Commander to ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"move_file\",\"description\":\"\\n
+      \                       Move or rename files and directories.\\n                        \\n
+      \                       Can move files between directories and rename them in
+      a single operation.\\n                        Both source and destination must
+      be within allowed directories.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"source\":{\"type\":\"string\"},\"destination\":{\"type\":\"string\"}},\"required\":[\"source\",\"destination\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"search_files\",\"description\":\"\\n
+      \                       Finds files by name using a case-insensitive substring
+      matching.\\n                        \\n                        Use this instead
+      of 'execute_command' with find/dir/ls for locating files.\\n                        Searches
+      through all subdirectories from the starting path.\\n                        \\n
+      \                       Has a default timeout of 30 seconds which can be customized
+      using the timeoutMs parameter.\\n                        Only searches within
+      allowed directories.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"pattern\":{\"type\":\"string\"},\"timeoutMs\":{\"type\":\"number\"}},\"required\":[\"path\",\"pattern\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"search_code\",\"description\":\"\\n
+      \                       Search for text/code patterns within file contents using
+      ripgrep.\\n                        \\n                        Use this instead
+      of 'execute_command' with grep/find for searching code content.\\n                        Fast
+      and powerful search similar to VS Code search functionality.\\n                        \\n
+      \                       Supports regular expressions, file pattern filtering,
+      and context lines.\\n                        Has a default timeout of 30 seconds
+      which can be customized.\\n                        Only searches within allowed
+      directories.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"},\"pattern\":{\"type\":\"string\"},\"filePattern\":{\"type\":\"string\"},\"ignoreCase\":{\"type\":\"boolean\"},\"maxResults\":{\"type\":\"number\"},\"includeHidden\":{\"type\":\"boolean\"},\"contextLines\":{\"type\":\"number\"},\"timeoutMs\":{\"type\":\"number\"}},\"required\":[\"path\",\"pattern\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"get_file_info\",\"description\":\"\\n
+      \                       Retrieve detailed metadata about a file or directory
+      including:\\n                        - size\\n                        - creation
+      time\\n                        - last modified time \\n                        -
+      permissions\\n                        - type\\n                        - lineCount
+      (for text files)\\n                        - lastLine (zero-indexed number of
+      last line, for text files)\\n                        - appendPosition (line
+      number for appending, for text files)\\n                        \\n                        Only
+      works within allowed directories.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"edit_block\",\"description\":\"\\n
+      \                       Apply surgical text replacements to files.\\n                        \\n
+      \                       BEST PRACTICE: Make multiple small, focused edits rather
+      than one large edit.\\n                        Each edit_block call should change
+      only what needs to be changed - include just enough \\n                        context
+      to uniquely identify the text being modified.\\n                        \\n
+      \                       Takes:\\n                        - file_path: Path to
+      the file to edit\\n                        - old_string: Text to replace\\n
+      \                       - new_string: Replacement text\\n                        -
+      expected_replacements: Optional parameter for number of replacements\\n                        \\n
+      \                       By default, replaces only ONE occurrence of the search
+      text.\\n                        To replace multiple occurrences, provide the
+      expected_replacements parameter with\\n                        the exact number
+      of matches expected.\\n                        \\n                        UNIQUENESS
+      REQUIREMENT: When expected_replacements=1 (default), include the minimal\\n
+      \                       amount of context necessary (typically 1-3 lines) before
+      and after the change point,\\n                        with exact whitespace
+      and indentation.\\n                        \\n                        When editing
+      multiple sections, make separate edit_block calls for each distinct change\\n
+      \                       rather than one large replacement.\\n                        \\n
+      \                       When a close but non-exact match is found, a character-level
+      diff is shown in the format:\\n                        common_prefix{-removed-}{+added+}common_suffix
+      to help you identify what's different.\\n                        \\n                        Similar
+      to write_file, there is a configurable line limit (fileWriteLineLimit) that
+      warns\\n                        if the edited file exceeds this limit. If this
+      happens, consider breaking your edits into\\n                        smaller,
+      more focused changes.\\n                        \\n                        IMPORTANT:
+      Always use absolute paths (starting with '/' or drive letter like 'C:\\\\')
+      for reliability. Relative paths may fail as they depend on the current working
+      directory. Tilde paths (~/...) might not work in all contexts. Unless the user
+      explicitly asks for relative paths, use absolute paths.\\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"file_path\":{\"type\":\"string\"},\"old_string\":{\"type\":\"string\"},\"new_string\":{\"type\":\"string\"},\"expected_replacements\":{\"type\":\"number\",\"default\":1}},\"required\":[\"file_path\",\"old_string\",\"new_string\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"execute_command\",\"description\":\"\\n
+      \                       Execute a terminal command with timeout.\\n                        \\n
+      \                       Command will continue running in background if it doesn't
+      complete within timeout.\\n                        \\n                        NOTE:
+      For file operations, prefer specialized tools like read_file, search_code, \\n
+      \                       list_directory instead of cat, grep, or ls commands.\\n
+      \                       \\n                        IMPORTANT: Always use absolute
+      paths (starting with '/' or drive letter like 'C:\\\\') for reliability. Relative
+      paths may fail as they depend on the current working directory. Tilde paths
+      (~/...) might not work in all contexts. Unless the user explicitly asks for
+      relative paths, use absolute paths.\\n                        This command can
+      be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to ...\\\" in
+      your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"command\":{\"type\":\"string\"},\"timeout_ms\":{\"type\":\"number\"},\"shell\":{\"type\":\"string\"}},\"required\":[\"command\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"read_output\",\"description\":\"\\n
+      \                       Read new output from a running terminal session.\\n
+      \                       \\n                        This command can be referenced
+      as \\\"DC: ...\\\" or \\\"use Desktop Commander to ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"pid\":{\"type\":\"number\"}},\"required\":[\"pid\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"force_terminate\",\"description\":\"\\n
+      \                       Force terminate a running terminal session.\\n                        \\n
+      \                       This command can be referenced as \\\"DC: ...\\\" or
+      \\\"use Desktop Commander to ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"pid\":{\"type\":\"number\"}},\"required\":[\"pid\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}},{\"type\":\"function\",\"function\":{\"name\":\"list_sessions\",\"description\":\"\\n
+      \                       List all active terminal sessions.\\n                        \\n
+      \                       This command can be referenced as \\\"DC: ...\\\" or
+      \\\"use Desktop Commander to ...\\\" in your instructions.\",\"parameters\":{}}},{\"type\":\"function\",\"function\":{\"name\":\"list_processes\",\"description\":\"\\n
+      \                       List all running processes.\\n                        \\n
+      \                       Returns process information including PID, command name,
+      CPU usage, and memory usage.\\n                        \\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{}}},{\"type\":\"function\",\"function\":{\"name\":\"kill_process\",\"description\":\"\\n
+      \                       Terminate a running process by PID.\\n                        \\n
+      \                       Use with caution as this will forcefully terminate the
+      specified process.\\n                        \\n                        This
+      command can be referenced as \\\"DC: ...\\\" or \\\"use Desktop Commander to
+      ...\\\" in your instructions.\",\"parameters\":{\"type\":\"object\",\"properties\":{\"pid\":{\"type\":\"number\"}},\"required\":[\"pid\"],\"additionalProperties\":false,\"$schema\":\"http://json-schema.org/draft-07/schema#\"}}}]}"
+    headers:
+      accept:
+      - application/json
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '22832'
+      content-type:
+      - application/json
+      host:
+      - api.openai.com
+      user-agent:
+      - OpenAI/Python 1.79.0
+      x-stainless-arch:
+      - arm64
+      x-stainless-async:
+      - 'false'
+      x-stainless-lang:
+      - python
+      x-stainless-os:
+      - MacOS
+      x-stainless-package-version:
+      - 1.79.0
+      x-stainless-read-timeout:
+      - '600'
+      x-stainless-retry-count:
+      - '0'
+      x-stainless-runtime:
+      - CPython
+      x-stainless-runtime-version:
+      - 3.12.7
+    method: POST
+    uri: https://api.openai.com/v1/chat/completions
+  response:
+    body:
+      string: 'data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"role":"assistant","content":"","refusal":null},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"The"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        files"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        and"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        directories"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        in"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        /"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"Users"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"/"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"ian"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"/p"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"/"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"ll"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"m"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-m"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"cp"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        are"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":":\n\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"Files"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":":\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        ."},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"coverage"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        ."},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"git"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"ignore"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        ."},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"pre"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"commit"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-config"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":".yaml"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        LICENSE"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        Make"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"file"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        README"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":".md"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        code"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"cov"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":".yaml"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        coverage"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":".xml"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        l"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"zy"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"ank"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":".tom"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"l"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        mk"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"docs"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":".yml"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        py"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"project"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":".tom"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"l"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        secret"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":".txt"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        tox"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":".ini"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        uv"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":".lock"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"Directories"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":":\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        ."},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"git"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        ."},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"github"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        ."},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"idea"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        ."},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"m"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"ypy"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"_cache"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        ."},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"pytest"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"_cache"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        ."},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"ruff"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"_cache"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        ."},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"ven"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"v"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        dist"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        docs"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        html"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"cov"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        ll"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"mt"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"xt"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        src"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"-"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        tests"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"\n\n"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"Let"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        me"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        know"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        if"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        you"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        want"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        details"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        or"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        actions"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        on"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        any"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        specific"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        files"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        or"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"
+        directories"},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{"content":"."},"logprobs":null,"finish_reason":null}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[{"index":0,"delta":{},"logprobs":null,"finish_reason":"stop"}],"usage":null}
+
+
+        data: {"id":"chatcmpl-Ba7afK79lMrmiNLQb2AsNwF4d0oLu","object":"chat.completion.chunk","created":1747948685,"model":"gpt-4.1-mini-2025-04-14","service_tier":"default","system_fingerprint":"fp_79b79be41f","choices":[],"usage":{"prompt_tokens":3147,"completion_tokens":159,"total_tokens":3306,"prompt_tokens_details":{"cached_tokens":3072,"audio_tokens":0},"completion_tokens_details":{"reasoning_tokens":0,"audio_tokens":0,"accepted_prediction_tokens":0,"rejected_prediction_tokens":0}}}
+
+
+        data: [DONE]
+
+
+        '
+    headers:
+      CF-RAY:
+      - 943f581479c5218b-ORD
+      Connection:
+      - keep-alive
+      Content-Type:
+      - text/event-stream; charset=utf-8
+      Date:
+      - Thu, 22 May 2025 21:18:06 GMT
+      Server:
+      - cloudflare
+      Set-Cookie:
+      - __cf_bm=g4NXXIuN_fu.LBMfD7oALkM88GRZkLflgy9NsSCbUpE-1747948686-1.0.1.1-mWIWKheNuaHKyNz9LzD0X9rL_.UQKfZOAi6U5Rf3boiCPZ91FNz.hHS0U3gKgOKptBUeNUu0rlhxrYLKndFIMUySveG7mr5fNX0MU2kXQ28;
+        path=/; expires=Thu, 22-May-25 21:48:06 GMT; domain=.api.openai.com; HttpOnly;
+        Secure; SameSite=None
+      - _cfuvid=7xJuwQy5g4lwXQfkIpB.7YfNAQyPyWWw8TP_sto9_rY-1747948686258-0.0.1.1-604800000;
+        path=/; domain=.api.openai.com; HttpOnly; Secure; SameSite=None
+      Transfer-Encoding:
+      - chunked
+      X-Content-Type-Options:
+      - nosniff
+      access-control-expose-headers:
+      - X-Request-ID
+      alt-svc:
+      - h3=":443"; ma=86400
+      cf-cache-status:
+      - DYNAMIC
+      openai-organization:
+      - genomoncology-2v7ur8
+      openai-processing-ms:
+      - '616'
+      openai-version:
+      - '2020-10-01'
+      strict-transport-security:
+      - max-age=31536000; includeSubDomains; preload
+      x-envoy-upstream-service-time:
+      - '619'
+      x-ratelimit-limit-requests:
+      - '5000'
+      x-ratelimit-limit-tokens:
+      - '4000000'
+      x-ratelimit-remaining-requests:
+      - '4999'
+      x-ratelimit-remaining-tokens:
+      - '3999877'
+      x-ratelimit-reset-requests:
+      - 12ms
+      x-ratelimit-reset-tokens:
+      - 1ms
+      x-request-id:
+      - req_f54b3c35c7297e7507e72b885614a72a
+    status:
+      code: 200
+      message: OK
+version: 1
