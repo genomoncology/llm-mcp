@@ -134,4 +134,4 @@ branch = true
 source = ["src"]
 
 [project.entry-points."llm"]
-mcp = "llm_mcp"
+mcp = "llm_mcp.plugin"
