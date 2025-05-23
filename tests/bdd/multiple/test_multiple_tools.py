@@ -1,5 +1,4 @@
 import os
-from pathlib import Path
 
 import pytest
 from llm import get_model
@@ -7,14 +6,10 @@ from pytest_bdd import given, parsers, scenarios, then, when
 
 from llm_mcp import wrap_mcp
 
-scenarios("./wrap/wrap_tools.feature")
+scenarios("./multiple/multiple_tools.feature")
 
 pytestmark = pytest.mark.vcr(record_mode="new_episodes")
 API_KEY = os.environ.get("OPENAI_API_KEY", None) or "gm-..."
-
-
-ROOT_DIR = Path(__file__).resolve().parents[3]
-SECRET_FILE = ROOT_DIR / "secret.txt"
 
 
 @given(
@@ -55,12 +50,12 @@ def then_schema_contains(schemas, tool_name: str, param: str):
     target_fixture="punchline",
 )
 @pytest.mark.vcr()
-def punchline(tools):
+def punchline(tools, data_dir):
     model = get_model("gpt-4.1-mini")
 
     prompt = f"""
     Do the following steps exactly:
-    - Use the "read_file" tool to read "secret.txt" found here in {ROOT_DIR}.
+    - Use the "read_file" tool to read "secret.txt" found here in {data_dir}.
     - If you can't read that file, stop immediately and just say "WALRUS!".
     - Use "search_llm_code" with the secret joke as the query.
     - From the search results, obtain the URL of the document.

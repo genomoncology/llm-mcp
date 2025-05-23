@@ -1,3 +1,5 @@
+"""Pydantic schemas (instead of the obviously troublesome name 'models')."""
+
 import re
 import shlex
 from datetime import timedelta
@@ -27,7 +29,6 @@ class RemoteServerParameters(BaseModel):
 
     def as_kwargs(self) -> dict[str, Any]:
         data = self.model_dump(mode="python", exclude={"url"})
-        # Convert int seconds to timedelta
         data["timeout"] = timedelta(seconds=data["timeout"])
         data["sse_read_timeout"] = timedelta(seconds=data["sse_read_timeout"])
         return data
@@ -36,13 +37,74 @@ class RemoteServerParameters(BaseModel):
 ServerParameters = RemoteServerParameters | StdioServerParameters
 
 
+class ServerConfig(BaseModel):
+    name: str
+    parameters: ServerParameters
+
+
+class ToolConfig(BaseModel):
+    mcp_server: str = Field(
+        ..., description="Name of the upstream MCP server that contains tool."
+    )
+    mcp_tool: str = Field(
+        ..., description="Name tool is known as by the upstream MCP server."
+    )
+    tool_name: str = Field(
+        ..., description="Name by tool is referred to with `llm` ecosystem."
+    )
+    groups: list[str] = Field(
+        default_factory=list,
+        description="List of groups that tool is a member of.",
+    )
+    default_group: bool = Field(
+        default=True, description="Whether tool is active by default."
+    )
+
+    def is_group(self, group_name: str | None = None) -> bool:
+        if group_name is None:
+            return self.default_group
+        else:
+            return group_name in self.groups
+
+
+class ConfigFile(BaseModel):
+    version: int = Field(
+        default=1,
+        description="Version of the configuration file structure.",
+    )
+    servers: list[ServerConfig] = Field(
+        default_factory=list,
+        description="List of upstream model content protocol (MCP) servers.",
+    )
+    tools: list[ToolConfig] = Field(
+        default_factory=list,
+        description="List of exposed tools from upstream MCP servers and "
+        "other registered `llm` tools.",
+    )
+
+    def get_tools(self, group_name: str | None = None) -> list[ToolConfig]:
+        return list(filter(lambda t: t.is_group(group_name), self.tools))
+
+    def get_server(self, server_name: str) -> ServerConfig | None:
+        keep: ServerConfig | None = None
+        for server in self.servers:
+            if server.name == server_name:
+                keep = server
+                break
+        return keep
+
+
 def parse_params(param_str: str) -> ServerParameters | None:
     """Convert a string param to either Http or Stdio ServerParameters."""
     param_str = param_str.strip()
-    url_pattern = re.compile(r"https?://")
 
+    # attempt to parse remote parameters
+
+    url_pattern = re.compile(r"https?://")
     if url_pattern.match(param_str):
         return RemoteServerParameters(url=param_str)
+
+    # assumes and returns non-remote as stdio parameters
 
     env_vars = {}
     parts = shlex.split(param_str)
@@ -63,29 +125,4 @@ def parse_params(param_str: str) -> ServerParameters | None:
         )
         if cmd_parts
         else None
-    )
-
-
-class Upstream(BaseModel):
-    name: str
-    parameters: ServerParameters
-
-
-class Exposes(BaseModel):
-    pass
-
-
-class ConfigFile(BaseModel):
-    version: int = Field(
-        default=1,
-        description="Version of the configuration file structure.",
-    )
-    upstreams: list[Upstream] = Field(
-        default_factory=list,
-        description="List of upstream model content protocol (MCP) servers.",
-    )
-    exposes: list[Exposes] = Field(
-        default_factory=list,
-        description="List of exposed tools from upstream MCP servers and "
-        "other registered `llm` tools.",
     )

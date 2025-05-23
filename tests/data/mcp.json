@@ -1,5 +1,28 @@
 {
   "version": 1,
-  "upstreams": [],
-  "exposes": []
+  "servers": [
+    {
+      "name": "gitmcp_simonw_llm",
+      "parameters": {
+        "url": "https://gitmcp.io/simonw/llm"
+      }
+    },
+    {
+      "name": "desktop_commander",
+      "parameters": {
+        "command": "npx",
+        "args": [
+          "-y",
+          "@wonderwhy-er/desktop-commander"
+        ]
+      }
+    }
+  ],
+  "tools": [
+    {
+      "mcp_server": "desktop_commander",
+      "mcp_tool": "read_file",
+      "tool_name": "read_file"
+    }
+  ]
 }

@@ -5,24 +5,32 @@ import pytest
 from llm_mcp.schema import (
     ConfigFile,
     RemoteServerParameters,
+    ServerConfig,
     StdioServerParameters,
-    Upstream,
+    ToolConfig,
     parse_params,
 )
 
 
 def test_defaults():
     config = ConfigFile(
-        upstreams=[
-            Upstream(
+        servers=[
+            ServerConfig(
                 name="gitmcp_simonw_llm",
                 parameters=parse_params("https://gitmcp.io/simonw/llm"),
             ),
-            Upstream(
+            ServerConfig(
                 name="desktop_commander",
                 parameters=parse_params(
                     "npx -y @wonderwhy-er/desktop-commander"
                 ),
+            ),
+        ],
+        tools=[
+            ToolConfig(
+                mcp_server="desktop_commander",
+                mcp_tool="read_file",
+                tool_name="read_file",
             ),
         ],
     )
@@ -31,7 +39,7 @@ def test_defaults():
 
     assert config.model_dump() == {
         "version": 1,
-        "upstreams": [
+        "servers": [
             {
                 "name": "gitmcp_simonw_llm",
                 "parameters": {
@@ -54,8 +62,17 @@ def test_defaults():
                 },
             },
         ],
-        "exposes": [],
+        "tools": [
+            {
+                "mcp_server": "desktop_commander",
+                "mcp_tool": "read_file",
+                "tool_name": "read_file",
+                "default_group": True,
+                "groups": [],
+            }
+        ],
     }
+    print(config.model_dump_json(indent=4))
 
 
 def test_as_kwargs_timedelta_conversion():

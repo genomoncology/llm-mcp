@@ -1,11 +1,10 @@
 import os
-from pathlib import Path
 
 import pytest
 from llm import get_model
 from pytest_bdd import given, scenarios, then, when
 
-from llm_mcp import schema, wrap_stdio
+from llm_mcp import schema, wrap_mcp
 
 scenarios("./stdio/stdio_read_file.feature")
 
@@ -13,23 +12,18 @@ pytestmark = pytest.mark.vcr(record_mode="new_episodes")
 API_KEY = os.environ.get("OPENAI_API_KEY", None) or "gm-..."
 
 
-ROOT_DIR = Path(__file__).resolve().parents[3]
-SECRET_FILE = ROOT_DIR / "secret.txt"
-
-
 @given(
     "the desktop-commander is available with directory access",
     target_fixture="tools",
 )
-def tools():
+def tools(data_dir):
     """Start desktop-commander with --allow pointing at the feature dir."""
     params = schema.StdioServerParameters(
-        command="npx", args=["-y", "@wonderwhy-er/desktop-commander"]
+        command="npx",
+        args=["-y", "@wonderwhy-er/desktop-commander"],
+        cwd=data_dir,
     )
-    return wrap_stdio(params)
-
-
-# ── Scenario: directory listing ──────────────────────────────────────────── #
+    return wrap_mcp(params)
 
 
 @when(
@@ -39,7 +33,7 @@ def tools():
 def listing_response(tools):
     model = get_model("gpt-4.1-mini")
     return model.chain(
-        f"List the files in: {ROOT_DIR}",
+        "List the files in current working directory.",
         tools=tools,
         key=API_KEY,
     ).text()
@@ -60,13 +54,14 @@ def check_listing(listing_response):
 def response(tools):
     model = get_model("gpt-4.1-mini")
     return model.chain(
-        f"Read the secret.txt found here in {ROOT_DIR}.",
+        "Read the secret.txt found here in current directory.",
         tools=tools,
     ).text()
 
 
 @then("the assistant reply contains the secret text")
-def check_secret(response):
-    assert SECRET_FILE.is_file()
-    expected = SECRET_FILE.read_text().strip().strip('"').lower()
+def check_secret(response, data_dir):
+    secret_file = data_dir / "secret.txt"
+    assert secret_file.is_file()
+    expected = secret_file.read_text().strip().strip('"').lower()
     assert expected in response.lower()

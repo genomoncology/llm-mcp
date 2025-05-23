@@ -5,7 +5,7 @@ from llm import get_model
 from pydantic import BaseModel
 from pytest_bdd import given, parsers, scenarios, then, when
 
-from llm_mcp import schema, wrap_http
+from llm_mcp import schema, wrap_mcp
 
 scenarios("./http/http_model_aliases.feature")
 
@@ -19,7 +19,7 @@ API_KEY = os.environ.get("OPENAI_API_KEY", None) or "gm-..."
 )
 def tools():
     params = schema.RemoteServerParameters(url="https://gitmcp.io/simonw/llm")
-    return wrap_http(params)
+    return wrap_mcp(params)
 
 
 class AliasSchema(BaseModel):

@@ -18,6 +18,7 @@ classifiers = [
 ]
 dependencies = [
     "click>=8.2.0",
+    "click-default-group>=1.2.4",
     "llm==0.26a0",
     "mcp[cli]>=1.9.0",
     "pydantic>=2.11.4",
@@ -133,6 +134,9 @@ skip_empty = true
 [tool.coverage.run]
 branch = true
 source = ["src"]
+
+[project.scripts]
+llm_mcp = "llm_mcp.__main__:main"
 
 [project.entry-points."llm"]
 mcp = "llm_mcp.plugin"

@@ -1,9 +1,8 @@
 """
-Wrap MCP Servers into `llm` Tool objects.
+Simpler module-based wrap.py - sync only, but cleaner design.
 """
 
-from collections.abc import Callable, Mapping
-from itertools import chain
+from types import ModuleType
 from typing import Any
 
 from llm.models import Tool as LLMTool
@@ -11,94 +10,80 @@ from mcp import types
 
 from . import http, schema, stdio
 
-__all__ = ["wrap_http", "wrap_mcp", "wrap_stdio"]
+__all__ = ["wrap_mcp"]
 
 
 def wrap_mcp(*params: str | schema.ServerParameters) -> list[LLMTool]:
+    llm_tools = []
+
+    for param in params:
+        llm_tools.extend(server_to_llm_tools(param))
+
+    return llm_tools
+
+
+def server_to_llm_tools(
+    in_param: str | schema.ServerParameters,
+) -> list[LLMTool]:
     """
-    Wrap tools from stdio commands or HTTP URLs into flat list of llm.Tools.
+    Expects the module to have:
+    - list_tools_sync(params) -> list[types.Tool]
+    - call_tool_sync(params, tool_name, arguments) -> Any
     """
-    stdio_params: list[schema.StdioServerParameters] = []
-    http_params: list[schema.RemoteServerParameters] = []
+    param: schema.ServerParameters | None
+    if isinstance(in_param, str):
+        param = schema.parse_params(in_param)
+        if param is None:
+            return []
+    else:
+        param = in_param
 
-    for param_input in params:
-        if isinstance(param_input, str):
-            param_output = schema.parse_params(param_input)
-        else:
-            param_output = param_input
+    transport = _TRANSPORT[type(param)]
+    key = (_key(param), transport)
 
-        if isinstance(param_output, schema.RemoteServerParameters):
-            http_params.append(param_output)
-        elif isinstance(param_output, schema.StdioServerParameters):
-            stdio_params.append(param_output)
-        else:
-            pass  # todo: logging of invalid parameter strings.
+    if key not in _CACHE:
+        _CACHE[key] = [
+            _construct_tool(meta, param, transport)
+            for meta in transport.list_tools_sync(param)
+        ]
 
-    return wrap_http(*http_params) + wrap_stdio(*stdio_params)
-
-
-def wrap_stdio(*params: schema.StdioServerParameters) -> list[LLMTool]:
-    """Wrap tools exposed by stdio MCP servers as `llm.Tool` objects."""
-    return _do_wrap_tools(stdio.list_tools_sync, stdio.call_tool_sync, *params)
-
-
-def wrap_http(*params: schema.RemoteServerParameters) -> list[LLMTool]:
-    """Wrap tools exposed by HTTP MCP servers as `llm.Tool` objects."""
-    return _do_wrap_tools(http.list_tools_sync, http.call_tool_sync, *params)
+    # return a shallow copy (small cost, no surprises)
+    return list(_CACHE[key])
 
 
 # private functions
 
+_TRANSPORT: dict[type[schema.ServerParameters], ModuleType] = {
+    schema.RemoteServerParameters: http,
+    schema.StdioServerParameters: stdio,
+}
 
-def _do_wrap_tools(
-    list_tools_sync: Callable[[Any], list[types.Tool]],
-    call_tool_sync: Callable[[Any, str, Mapping[str, Any]], Any],
-    *params: Any,
-) -> list[LLMTool]:
-    """Generic wrapper for fetching tools from MCP servers."""
-    return list(
-        chain.from_iterable(
-            _mk_llm_tools(
-                list_tools_sync(param),
-                caller=lambda name, args, param=param: call_tool_sync(  # type: ignore[misc]
-                    param, name, args or {}
-                ),
-            )
-            for param in params
-        )
+_CACHE: dict[tuple[str, ModuleType], list[LLMTool]] = {}
+
+
+def _key(p: schema.ServerParameters) -> str:
+    return p.model_dump_json(
+        exclude_defaults=True,
+        exclude_unset=True,
+        exclude_none=True,
     )
 
 
-def _mk_llm_tools(
-    tool_meta: list[types.Tool],
-    *,
-    caller: Callable[[str, Mapping[str, Any]], Any],
-) -> list[LLMTool]:
-    tools: list[LLMTool] = []
+def _construct_tool(
+    mcp_tool: types.Tool,
+    params: schema.ServerParameters,
+    transport: ModuleType,
+) -> LLMTool:
+    def tool_impl(**kw: Any) -> Any:
+        return transport.call_tool_sync(params, mcp_tool.name, kw or {})
 
-    for tool in tool_meta:
+    schema_in = mcp_tool.inputSchema or {}
+    if schema_in.get("type") == "object" and not schema_in.get("properties"):
+        schema_in = {}
 
-        def make_impl(name: str) -> Callable[..., Any]:
-            def impl(**kwargs: Any) -> Any:
-                return caller(name, kwargs)
-
-            return impl
-
-        input_schema = tool.inputSchema or {}
-
-        # OpenAI rejects {"type": "object"}  → treat as argument-less
-        if input_schema.get("type") == "object" and not input_schema.get(
-            "properties"
-        ):
-            input_schema = {}
-
-        tools.append(
-            LLMTool(
-                name=tool.name,
-                description=tool.description or "",
-                input_schema=input_schema,
-                implementation=make_impl(tool.name),
-            )
-        )
-
-    return tools
+    return LLMTool(
+        name=mcp_tool.name,
+        description=mcp_tool.description or "",
+        input_schema=schema_in,
+        implementation=tool_impl,
+    )
