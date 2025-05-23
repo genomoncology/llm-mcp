@@ -4,7 +4,7 @@ import pytest
 from llm import get_model
 from pytest_bdd import given, parsers, scenarios, then, when
 
-from llm_mcp import wrap_any
+from llm_mcp import wrap_mcp
 
 scenarios("./wrap/wrap_tools.feature")
 
@@ -19,7 +19,7 @@ SECRET_FILE = ROOT_DIR / "secret.txt"
     target_fixture="tools",
 )
 def tools():
-    tools = wrap_any(
+    tools = wrap_mcp(
         "https://gitmcp.io/simonw/llm",
         "npx -y @wonderwhy-er/desktop-commander",
     )

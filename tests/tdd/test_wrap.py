@@ -1,6 +1,6 @@
 import pytest
 
-from llm_mcp import http, stdio, wrap, wrap_any, wrap_http, wrap_stdio
+from llm_mcp import http, stdio, wrap, wrap_http, wrap_mcp, wrap_stdio
 
 
 @pytest.mark.parametrize(
@@ -66,9 +66,9 @@ stdio_params = stdio.ServerParameters(
 )
 
 
-def test_wrap_any_empties(mocker):
-    assert wrap_any("") == []
-    assert wrap_any() == []
+def test_wrap_mcp_empties(mocker):
+    assert wrap_mcp("") == []
+    assert wrap_mcp() == []
 
 
 def test_wrap_strings(mocker):
@@ -79,7 +79,7 @@ def test_wrap_strings(mocker):
         "ENV=value npx tool",
         "https://example.com/api",
     ]
-    result = wrap_any(*params)
+    result = wrap_mcp(*params)
     assert result == []
     mock_stdio.assert_called_once_with(stdio_params)
     mock_http.assert_called_once_with(http_params)
@@ -89,7 +89,7 @@ def test_wrap_existing_params(mocker):
     mock_stdio = mocker.patch("llm_mcp.stdio.list_tools_sync", return_value=[])
     mock_http = mocker.patch("llm_mcp.http.list_tools_sync", return_value=[])
 
-    result = wrap_any(http_params, stdio_params)
+    result = wrap_mcp(http_params, stdio_params)
     assert result == []
     mock_stdio.assert_called_once_with(stdio_params)
     mock_http.assert_called_once_with(http_params)

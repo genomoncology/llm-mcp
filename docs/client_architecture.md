@@ -30,7 +30,7 @@ The client implementation comprises a few focused modules:
 | **transport adapters**   | Simple wrappers that abstract MCP server transports                      | `stdio.py`, `http.py`                       |
 | **background loop**      | Single background event-loop to safely run async code from sync contexts | `run_async()`                               |
 | **conversion utilities** | Transform raw MCP data to native Python objects                          | `convert_content()`                         |
-| **tool wrappers**        | Wrap MCP server tools for easy integration with the `llm` library        | `wrap_stdio()`, `wrap_http()`, `wrap_any()` |
+| **tool wrappers**        | Wrap MCP server tools for easy integration with the `llm` library        | `wrap_stdio()`, `wrap_http()`, `wrap_mcp()` |
 
 This clear separation of concerns makes it easy to add new transports or
 enhance functionality with minimal changes.
@@ -98,10 +98,10 @@ data formats into plain Python types, simplifying client-side processing.
 Example usage:
 
 ```python
-from llm_mcp import wrap_any, wrap_stdio, wrap_http
+from llm_mcp import wrap_mcp, wrap_stdio, wrap_http
 
 # Wrap tools from both stdio and HTTP servers
-tools = wrap_any(
+tools = wrap_mcp(
     "https://gitmcp.io/simonw/llm",
     "npx -y @wonderwhy-er/desktop-commander",
 )

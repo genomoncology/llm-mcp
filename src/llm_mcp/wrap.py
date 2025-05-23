@@ -13,10 +13,10 @@ from mcp import types
 
 from . import http, stdio
 
-__all__ = ["wrap_any", "wrap_http", "wrap_stdio"]
+__all__ = ["wrap_http", "wrap_mcp", "wrap_stdio"]
 
 
-def wrap_any(
+def wrap_mcp(
     *params: str | stdio.ServerParameters | http.ServerParameters,
 ) -> list[LLMTool]:
     """

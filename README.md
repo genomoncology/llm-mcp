@@ -5,7 +5,9 @@
 [![codecov](https://codecov.io/gh/imaurer/llm-mcp/branch/main/graph/badge.svg)](https://codecov.io/gh/imaurer/llm-mcp)
 [![MIT License](https://img.shields.io/github/license/imaurer/llm-mcp)](https://img.shields.io/github/license/imaurer/llm-mcp)
 
-[`llm`](https://llm.datasette.io/) [plugin](https://llm.datasette.io/en/stable/plugins/directory.html) for creating MCP clients and servers.
+[
+`llm`](https://llm.datasette.io/) [plugin](https://llm.datasette.io/en/stable/plugins/directory.html)
+for creating MCP clients and servers.
 
 ## Installation
 
@@ -15,61 +17,78 @@ pip install llm-mcp
 
 ## MCP Servers
 
-This package provides a bridge between MCP servers and the `llm` package, allowing you to use MCP tools with LLM models. The bridge supports both stdio and HTTP-based MCP servers and provides a synchronous interface that's safe to use in any context, including Jupyter notebooks, FastAPI applications, and more.
+This package provides a bridge between MCP servers and the `llm` package,
+allowing you to use MCP tools with LLM models. The bridge supports both stdio
+and HTTP-based MCP servers and provides a synchronous interface that's safe to
+use in any context, including Jupyter notebooks, FastAPI applications, and
+more.
 
 ### Command Line Usage
 
-You can use MCP tools directly from the command line with the `llm` CLI:
-
-```bash
-llm --model gpt-4o-mini \
-    --tool list_directory "What files are here?"
-```
+(todo)
 
 ### Programmatic Usage
 
 For programmatic usage, you can wrap MCP tools as `llm.Tool` objects:
 
 ```python
-from llm.models import Model
-from mcp.client.stdio import StdioServerParameters
-from llm_mcp import wrap_tools_from_stdio
+import os
 
-# Connect to an MCP server
-server_params = StdioServerParameters(
+from llm import get_model
+from llm_mcp import wrap_stdio, stdio
+
+# convert stdio tool to llm tools
+tools = wrap_stdio(stdio.ServerParameters(
     command="npx",
     args=["-y", "@wonderwhy-er/desktop-commander"],
-)
+))
 
-# Wrap the MCP tools for use with llm
-tools = wrap_tools_from_stdio(server_params)
+# wrap_mcp(command) is convenience as wrap_mcp(stdio.ServerParameters)
+# from llm_mcp import wrap_mcp
+# tools = wrap_mcp("npx -y @wonderwhy-er/desktop-commander")
 
 # Use the tools with a model
-model = Model.from_string("gpt-3.5-turbo")
-response = model.chain("List the files in this directory", tools=tools)
-print(response.text)
+model = get_model("gpt-4.1-nano")
+response = model.chain(
+    f"Display the text found in the secret.txt file in {os.getcwd()}",
+    tools=tools,
+)
+print(response.text())
 ```
+
+**Output:**
+> The text found in the secret.txt file is: "Why don't pelicans like to tip
+> waiters?"
 
 ### HTTP Servers
 
 For HTTP-based MCP servers, use the HTTP bridge instead:
 
 ```python
-from mcp.client.streamable_http import StreamableHttpServerParameters
-from llm_mcp import wrap_tools_from_http
+from llm import get_model
 
-server_params = StreamableHttpServerParameters(
-    base_url="http://localhost:3000",
+from llm_mcp import wrap_http, http
+
+tools = wrap_http(http.ServerParameters("https://gitmcp.io/simonw/llm"))
+
+# wrap_mcp(url) is convenience as wrap_http(http.ServerParameters)
+# from llm_mcp import wrap_mcp
+# tools = wrap_mcp("https://gitmcp.io/simonw/llm")
+
+model = get_model("gpt-4.1")
+
+response = model.chain(
+    "Search llm github for CHANGELOG and display 1 sentence summary of the latest entry.",
+    tools=tools,
 )
-
-tools = wrap_tools_from_http(server_params)
+print(response.text())
 ```
 
-### Sync Bridge Guarantees
-
-The sync bridge provides the following guarantees:
-
-- Safe to use in any context, including Jupyter notebooks and FastAPI applications
-- Automatically reuses connections for better performance
-- Properly handles asyncio event loops in all contexts
-- Converts MCP results to Python objects
+**Output:**
+> The latest entry in the changelog (version 0.26a0, dated 2025-05-13)
+> introduces alpha support for tools in LLM, allowing models with tool
+> capability (including the default OpenAI models) to execute Python functions
+> as
+> part of responding to a prompt, with usage available in both the command-line
+> interface and Python API, and support for defining new tools via plugin
+> hooks.
