@@ -38,7 +38,7 @@ interactions:
       Access-Control-Max-Age:
       - '86400'
       CF-RAY:
-      - 94454aaf8fdbe81d-ORD
+      - 9445e6c83ef8f851-ORD
       Cache-Control:
       - no-cache
       Connection:
@@ -46,7 +46,7 @@ interactions:
       Content-Type:
       - text/event-stream
       Date:
-      - Fri, 23 May 2025 14:37:32 GMT
+      - Fri, 23 May 2025 16:24:05 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -56,7 +56,7 @@ interactions:
       alt-svc:
       - h3=":443"; ma=86400
       mcp-session-id:
-      - e21335cdf708cd4c482c7669c6dba0ec4d2f4135f17ac6292bfcdabc4591319e
+      - a2a6642479cd917e2d383e4849bb7f3dc375842cf52d93534e23b07bef6bde6c
     status:
       code: 200
       message: OK
@@ -76,7 +76,7 @@ interactions:
       host:
       - gitmcp.io
       mcp-session-id:
-      - e21335cdf708cd4c482c7669c6dba0ec4d2f4135f17ac6292bfcdabc4591319e
+      - a2a6642479cd917e2d383e4849bb7f3dc375842cf52d93534e23b07bef6bde6c
       user-agent:
       - python-httpx/0.28.1
     method: POST
@@ -96,13 +96,13 @@ interactions:
       Access-Control-Max-Age:
       - '86400'
       CF-RAY:
-      - 94454af3b8cbe81d-ORD
+      - 9445e70b5a34f851-ORD
       Connection:
       - keep-alive
       Content-Length:
       - '0'
       Date:
-      - Fri, 23 May 2025 14:37:42 GMT
+      - Fri, 23 May 2025 16:24:15 GMT
       Server:
       - cloudflare
       Vary:
@@ -128,7 +128,7 @@ interactions:
       host:
       - gitmcp.io
       mcp-session-id:
-      - e21335cdf708cd4c482c7669c6dba0ec4d2f4135f17ac6292bfcdabc4591319e
+      - a2a6642479cd917e2d383e4849bb7f3dc375842cf52d93534e23b07bef6bde6c
       user-agent:
       - python-httpx/0.28.1
     method: POST
@@ -166,7 +166,7 @@ interactions:
       Access-Control-Max-Age:
       - '86400'
       CF-RAY:
-      - 94454af3f9b3e81d-ORD
+      - 9445e70b9ab5f851-ORD
       Cache-Control:
       - no-cache
       Connection:
@@ -174,7 +174,7 @@ interactions:
       Content-Type:
       - text/event-stream
       Date:
-      - Fri, 23 May 2025 14:37:42 GMT
+      - Fri, 23 May 2025 16:24:15 GMT
       Server:
       - cloudflare
       Transfer-Encoding:
@@ -184,7 +184,7 @@ interactions:
       alt-svc:
       - h3=":443"; ma=86400
       mcp-session-id:
-      - e21335cdf708cd4c482c7669c6dba0ec4d2f4135f17ac6292bfcdabc4591319e
+      - a2a6642479cd917e2d383e4849bb7f3dc375842cf52d93534e23b07bef6bde6c
     status:
       code: 200
       message: OK
@@ -202,7 +202,7 @@ interactions:
       host:
       - gitmcp.io
       mcp-session-id:
-      - e21335cdf708cd4c482c7669c6dba0ec4d2f4135f17ac6292bfcdabc4591319e
+      - a2a6642479cd917e2d383e4849bb7f3dc375842cf52d93534e23b07bef6bde6c
       user-agent:
       - python-httpx/0.28.1
     method: DELETE
@@ -212,7 +212,7 @@ interactions:
       string: '{"jsonrpc":"2.0","error":{"code":-32000,"message":"Method not allowed"},"id":null}'
     headers:
       CF-RAY:
-      - 94454b32efc3e81d-ORD
+      - 9445e74aed7af851-ORD
       Connection:
       - keep-alive
       Content-Length:
@@ -220,7 +220,7 @@ interactions:
       Content-Type:
       - text/plain;charset=UTF-8
       Date:
-      - Fri, 23 May 2025 14:37:52 GMT
+      - Fri, 23 May 2025 16:24:26 GMT
       Server:
       - cloudflare
       Vary:
