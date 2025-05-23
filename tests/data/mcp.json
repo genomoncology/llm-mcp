@@ -13,7 +13,11 @@
         "command": "npx",
         "args": [
           "-y",
-          "@wonderwhy-er/desktop-commander"
+          "--loglevel",
+          "silent",
+          "@wonderwhy-er/desktop-commander",
+          "--log-level",
+          "ERROR"
         ]
       }
     }

@@ -754,6 +754,7 @@ dev = [
     { name = "ruff" },
     { name = "syrupy" },
     { name = "tox-uv" },
+    { name = "types-click-default-group" },
 ]
 
 [package.metadata]
@@ -785,6 +786,7 @@ dev = [
     { name = "ruff", specifier = ">=0.11.5" },
     { name = "syrupy", specifier = ">=4.9.1" },
     { name = "tox-uv", specifier = ">=1.11.3" },
+    { name = "types-click-default-group", specifier = ">=1.2.0.20250513" },
 ]
 
 [[package]]
@@ -2118,6 +2120,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/98/1a/5f36851f439884bcfe8539f6a20ff7516e7b60f319bbaf69a90dc35cc2eb/typer-0.15.3.tar.gz", hash = "sha256:818873625d0569653438316567861899f7e9972f2e6e0c16dab608345ced713c", size = 101641, upload-time = "2025-04-28T21:40:59.204Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/48/20/9d953de6f4367163d23ec823200eb3ecb0050a2609691e512c8b95827a9b/typer-0.15.3-py3-none-any.whl", hash = "sha256:c86a65ad77ca531f03de08d1b9cb67cd09ad02ddddf4b34745b5008f43b239bd", size = 45253, upload-time = "2025-04-28T21:40:56.269Z" },
+]
+
+[[package]]
+name = "types-click-default-group"
+version = "1.2.0.20250513"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "click" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/12/08/3f2ce095feccc45d72b58e3a24e859da92c187914b162e69dd4087f648e5/types_click_default_group-1.2.0.20250513.tar.gz", hash = "sha256:44804c5de725699e029ee87a3ce8b25b183708681649aa16223b190d926e9c50", size = 7954, upload-time = "2025-05-13T03:06:13.586Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f1/30/93282e923602e4802f5d23b928fa2052fa21530992c97ac8fe7bf4cb00ef/types_click_default_group-1.2.0.20250513-py3-none-any.whl", hash = "sha256:3a7af7f84356af7ea9a1d57b0574f1db938a4f40ec501f9d230500dc8aeb56bb", size = 8399, upload-time = "2025-05-13T03:06:12.445Z" },
 ]
 
 [[package]]

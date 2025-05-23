@@ -49,6 +49,7 @@ dev = [
     "ruff>=0.11.5",
     "syrupy>=4.9.1",
     "tox-uv>=1.11.3",
+    "types-click-default-group>=1.2.0.20250513",
 ]
 
 [build-system]
