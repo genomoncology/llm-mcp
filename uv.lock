@@ -726,6 +726,7 @@ name = "llm-mcp"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [
+    { name = "click" },
     { name = "llm" },
     { name = "mcp", extra = ["cli"] },
 ]
@@ -755,6 +756,7 @@ dev = [
 
 [package.metadata]
 requires-dist = [
+    { name = "click", specifier = ">=8.2.0" },
     { name = "llm", specifier = "==0.26a0" },
     { name = "mcp", extras = ["cli"], specifier = ">=1.9.0" },
 ]

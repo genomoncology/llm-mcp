@@ -43,7 +43,7 @@ tools = wrap_stdio(stdio.ServerParameters(
     args=["-y", "@wonderwhy-er/desktop-commander"],
 ))
 
-# wrap_mcp(command) is convenience as wrap_mcp(stdio.ServerParameters)
+# wrap_mcp(command string) equivalent to wrap_stdio(stdio.ServerParameters)
 # from llm_mcp import wrap_mcp
 # tools = wrap_mcp("npx -y @wonderwhy-er/desktop-commander")
 
@@ -71,11 +71,11 @@ from llm_mcp import wrap_http, http
 
 tools = wrap_http(http.ServerParameters("https://gitmcp.io/simonw/llm"))
 
-# wrap_mcp(url) is convenience as wrap_http(http.ServerParameters)
+# wrap_mcp(url) is equivalent to wrap_http(http.ServerParameters)
 # from llm_mcp import wrap_mcp
 # tools = wrap_mcp("https://gitmcp.io/simonw/llm")
 
-model = get_model("gpt-4.1")
+model = get_model("gpt-4.1-nano")
 
 response = model.chain(
     "Search llm github for CHANGELOG and display 1 sentence summary of the latest entry.",

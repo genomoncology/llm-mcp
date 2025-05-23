@@ -1,7 +1,5 @@
-from __future__ import annotations
-
 import pytest
-from llm import get_model
+from llm import get_key, get_model
 from pydantic import BaseModel
 from pytest_bdd import given, parsers, scenarios, then, when
 
@@ -10,6 +8,10 @@ from llm_mcp import http, wrap_http
 scenarios("./http/http_model_aliases.feature")
 
 pytestmark = pytest.mark.vcr(record_mode="new_episodes")
+API_KEY = (
+    get_key(explicit_key=None, key_alias="openai", env_var="OPENAI_API_KEY")
+    or "sk-..."
+)
 
 
 @given(
@@ -48,6 +50,7 @@ def aliases(tools, model_name) -> set[str]:
         ),
         tools=tools,
         stream=False,
+        key=API_KEY,
     )
     validated = AliasSchema.model_validate_json(response.text())
     return set(validated.aliases)

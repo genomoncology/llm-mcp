@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import pytest
-from llm import get_model
+from llm import get_key, get_model
 from pytest_bdd import given, parsers, scenarios, then, when
 
 from llm_mcp import wrap_mcp
@@ -9,6 +9,10 @@ from llm_mcp import wrap_mcp
 scenarios("./wrap/wrap_tools.feature")
 
 pytestmark = pytest.mark.vcr(record_mode="new_episodes")
+API_KEY = (
+    get_key(explicit_key=None, key_alias="openai", env_var="OPENAI_API_KEY")
+    or "sk-..."
+)
 
 ROOT_DIR = Path(__file__).resolve().parents[3]
 SECRET_FILE = ROOT_DIR / "secret.txt"
