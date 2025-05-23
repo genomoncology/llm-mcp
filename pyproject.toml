@@ -20,6 +20,7 @@ dependencies = [
     "click>=8.2.0",
     "llm==0.26a0",
     "mcp[cli]>=1.9.0",
+    "pydantic>=2.11.4",
 ]
 
 [project.urls]

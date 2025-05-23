@@ -729,6 +729,7 @@ dependencies = [
     { name = "click" },
     { name = "llm" },
     { name = "mcp", extra = ["cli"] },
+    { name = "pydantic" },
 ]
 
 [package.dev-dependencies]
@@ -759,6 +760,7 @@ requires-dist = [
     { name = "click", specifier = ">=8.2.0" },
     { name = "llm", specifier = "==0.26a0" },
     { name = "mcp", extras = ["cli"], specifier = ">=1.9.0" },
+    { name = "pydantic", specifier = ">=2.11.4" },
 ]
 
 [package.metadata.requires-dev]

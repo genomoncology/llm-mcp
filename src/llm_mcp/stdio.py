@@ -7,17 +7,11 @@ from typing import Any
 
 from mcp import types
 from mcp.client.session import ClientSession
-from mcp.client.stdio import (
-    StdioServerParameters as ServerParameters,
-)
-from mcp.client.stdio import (
-    stdio_client,
-)
+from mcp.client.stdio import stdio_client
 
-from . import convert_content, run_async
+from . import convert_content, run_async, schema
 
 __all__ = [
-    "ServerParameters",
     "call_tool_sync",
     "list_tools_sync",
 ]
@@ -25,7 +19,7 @@ __all__ = [
 # list_tools
 
 
-async def list_tools(params: ServerParameters) -> list[types.Tool]:
+async def list_tools(params: schema.StdioServerParameters) -> list[types.Tool]:
     async with (
         stdio_client(params) as (reader, writer),
         ClientSession(reader, writer) as session,
@@ -35,7 +29,7 @@ async def list_tools(params: ServerParameters) -> list[types.Tool]:
         return result.tools
 
 
-def list_tools_sync(params: ServerParameters) -> list[types.Tool]:
+def list_tools_sync(params: schema.StdioServerParameters) -> list[types.Tool]:
     """Blocking helper - fetch tool metadata from *params*."""
     return run_async(list_tools(params))
 
@@ -44,7 +38,7 @@ def list_tools_sync(params: ServerParameters) -> list[types.Tool]:
 
 
 async def call_tool(
-    params: ServerParameters,
+    params: schema.StdioServerParameters,
     tool_name: str,
     arguments: Mapping[str, Any] | None = None,
 ) -> Any:
@@ -61,7 +55,7 @@ async def call_tool(
 
 
 def call_tool_sync(
-    params: ServerParameters,
+    params: schema.StdioServerParameters,
     tool_name: str,
     arguments: Mapping[str, Any] | None = None,
 ) -> Any:

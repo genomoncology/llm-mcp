@@ -5,7 +5,7 @@ import pytest
 from llm import get_model
 from pytest_bdd import given, scenarios, then, when
 
-from llm_mcp import stdio, wrap_stdio
+from llm_mcp import schema, wrap_stdio
 
 scenarios("./stdio/stdio_read_file.feature")
 
@@ -23,7 +23,7 @@ SECRET_FILE = ROOT_DIR / "secret.txt"
 )
 def tools():
     """Start desktop-commander with --allow pointing at the feature dir."""
-    params = stdio.ServerParameters(
+    params = schema.StdioServerParameters(
         command="npx", args=["-y", "@wonderwhy-er/desktop-commander"]
     )
     return wrap_stdio(params)

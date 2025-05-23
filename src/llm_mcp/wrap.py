@@ -2,8 +2,6 @@
 Wrap MCP Servers into `llm` Tool objects.
 """
 
-import re
-import shlex
 from collections.abc import Callable, Mapping
 from itertools import chain
 from typing import Any
@@ -11,29 +9,27 @@ from typing import Any
 from llm.models import Tool as LLMTool
 from mcp import types
 
-from . import http, stdio
+from . import http, schema, stdio
 
 __all__ = ["wrap_http", "wrap_mcp", "wrap_stdio"]
 
 
-def wrap_mcp(
-    *params: str | stdio.ServerParameters | http.ServerParameters,
-) -> list[LLMTool]:
+def wrap_mcp(*params: str | schema.ServerParameters) -> list[LLMTool]:
     """
     Wrap tools from stdio commands or HTTP URLs into flat list of llm.Tools.
     """
-    stdio_params: list[stdio.ServerParameters] = []
-    http_params: list[http.ServerParameters] = []
+    stdio_params: list[schema.StdioServerParameters] = []
+    http_params: list[schema.RemoteServerParameters] = []
 
     for param_input in params:
         if isinstance(param_input, str):
-            param_output = _convert(param_input)
+            param_output = schema.parse_params(param_input)
         else:
             param_output = param_input
 
-        if isinstance(param_output, http.ServerParameters):
+        if isinstance(param_output, schema.RemoteServerParameters):
             http_params.append(param_output)
-        elif isinstance(param_output, stdio.ServerParameters):
+        elif isinstance(param_output, schema.StdioServerParameters):
             stdio_params.append(param_output)
         else:
             pass  # todo: logging of invalid parameter strings.
@@ -41,16 +37,12 @@ def wrap_mcp(
     return wrap_http(*http_params) + wrap_stdio(*stdio_params)
 
 
-def wrap_stdio(
-    *params: stdio.ServerParameters,
-) -> list[LLMTool]:
+def wrap_stdio(*params: schema.StdioServerParameters) -> list[LLMTool]:
     """Wrap tools exposed by stdio MCP servers as `llm.Tool` objects."""
     return _do_wrap_tools(stdio.list_tools_sync, stdio.call_tool_sync, *params)
 
 
-def wrap_http(
-    *params: http.ServerParameters,
-) -> list[LLMTool]:
+def wrap_http(*params: schema.RemoteServerParameters) -> list[LLMTool]:
     """Wrap tools exposed by HTTP MCP servers as `llm.Tool` objects."""
     return _do_wrap_tools(http.list_tools_sync, http.call_tool_sync, *params)
 
@@ -77,36 +69,6 @@ def _do_wrap_tools(
     )
 
 
-def _convert(
-    param_str: str,
-) -> stdio.ServerParameters | http.ServerParameters | None:
-    """Convert a string param to either Http or Stdio ServerParameters."""
-    param_str = param_str.strip()
-    url_pattern = re.compile(r"https?://")
-
-    if url_pattern.match(param_str):
-        return http.ServerParameters(base_url=param_str)
-
-    env_vars = {}
-    parts = shlex.split(param_str)
-    cmd_parts: list[str] = []
-
-    for part in parts:
-        if "=" in part and not cmd_parts:
-            key, val = part.split("=", 1)
-            env_vars[key] = val
-        else:
-            cmd_parts.append(part)
-
-    return (
-        stdio.ServerParameters(
-            command=cmd_parts[0], args=cmd_parts[1:], env=env_vars or None
-        )
-        if cmd_parts
-        else None
-    )
-
-
 def _mk_llm_tools(
     tool_meta: list[types.Tool],
     *,
@@ -122,17 +84,19 @@ def _mk_llm_tools(
 
             return impl
 
-        schema = tool.inputSchema or {}
+        input_schema = tool.inputSchema or {}
 
         # OpenAI rejects {"type": "object"}  → treat as argument-less
-        if schema.get("type") == "object" and not schema.get("properties"):
-            schema = {}
+        if input_schema.get("type") == "object" and not input_schema.get(
+            "properties"
+        ):
+            input_schema = {}
 
         tools.append(
             LLMTool(
                 name=tool.name,
                 description=tool.description or "",
-                input_schema=schema,
+                input_schema=input_schema,
                 implementation=make_impl(tool.name),
             )
         )
