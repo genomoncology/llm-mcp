@@ -2,12 +2,12 @@ import click
 import llm
 
 from . import cli as mcp_cli
-from . import config
 
 
 @llm.hookimpl
 def register_tools(register):
-    tools = config.get_tools()
+    # todo: replace with loading the 'default" tool group
+    tools: list[llm.Tool] = []
     for tool in tools:
         register(tool)
 
