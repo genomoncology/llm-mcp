@@ -61,9 +61,21 @@ class ToolConfig(BaseModel):
     )
 
     def is_group(self, group_name: str | None = None) -> bool:
+        """
+        Determine if this tool belongs to the specified group.
+
+        Args:
+            group_name: The group to check membership for, or None for default group
+
+        Returns:
+            True if the tool belongs to the specified group
+        """
         if group_name is None:
+            # For default group, use the default_group flag
+            # If the tool doesn't have a default_group property or it's set to True, include it
             return self.default_group
         else:
+            # For explicit groups, check membership in the groups list
             return group_name in self.groups
 
 

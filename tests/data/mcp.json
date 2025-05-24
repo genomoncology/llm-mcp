@@ -26,7 +26,38 @@
     {
       "mcp_server": "desktop_commander",
       "mcp_tool": "read_file",
-      "tool_name": "read_file"
+      "tool_name": "read_file",
+      "groups": [
+        "A",
+        "C"
+      ]
+    },
+    {
+      "mcp_server": "desktop_commander",
+      "mcp_tool": "list_directory",
+      "tool_name": "list_directory",
+      "groups": [
+        "C"
+      ]
+    },
+    {
+      "mcp_server": "gitmcp_simonw_llm",
+      "mcp_tool": "search_llm_code",
+      "tool_name": "search_llm_code",
+      "default_group": false,
+      "groups": [
+        "B",
+        "C"
+      ]
+    },
+    {
+      "mcp_server": "gitmcp_simonw_llm",
+      "mcp_tool": "fetch_generic_url_content",
+      "tool_name": "fetch_generic_url_content",
+      "default_group": false,
+      "groups": [
+        "C"
+      ]
     }
   ]
 }
