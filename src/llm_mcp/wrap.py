@@ -8,7 +8,7 @@ from typing import Any
 from llm.models import Tool as LLMTool
 from mcp import types
 
-from . import http, schema, stdio
+from . import http, schema, stdio, utils
 
 __all__ = ["wrap_mcp"]
 
@@ -32,7 +32,7 @@ def server_to_llm_tools(
     """
     param: schema.ServerParameters | None
     if isinstance(in_param, str):
-        param = schema.parse_params(in_param)
+        param = utils.parse_params(in_param)
         if param is None:
             return []
     else:

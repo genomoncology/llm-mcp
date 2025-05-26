@@ -9,7 +9,7 @@ from mcp import types
 from mcp.client.session import ClientSession
 from mcp.client.stdio import stdio_client
 
-from . import convert_content, run_async, schema
+from . import run_async, schema, utils
 
 __all__ = [
     "call_tool_sync",
@@ -50,7 +50,7 @@ async def call_tool(
         call: types.CallToolResult = await session.call_tool(
             tool_name, dict(arguments or {})
         )
-        parts = [convert_content(p) for p in call.content]
+        parts = [utils.convert_content(p) for p in call.content]
         return parts[0] if len(parts) == 1 else parts
 
 

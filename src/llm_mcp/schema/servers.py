@@ -1,41 +1,15 @@
-from typing import Any
-
+from mcp.types import Tool as ServerTool
 from pydantic import BaseModel, Field
 
 from .parameters import ServerParameters
 
 
-class ToolAnnotations(BaseModel):
-    title: str | None = None
-    readOnlyHint: bool | None = None
-    destructiveHint: bool | None = None
-    idempotentHint: bool | None = None
-    openWorldHint: bool | None = None
-
-
-class ServerTool(BaseModel):
-    """Raw MCP tool definition"""
-
+class ServerConfig(BaseModel):
     name: str = Field(
         ...,
-        description="Name of the tool per the upstream server.",
+        description="Name of the server which maps to server file name.",
+        pattern="^[a-z0-9_]+$",
     )
-    description: str | None = Field(
-        default=None,
-        description="Description of the tool per the upstream server.",
-    )
-    inputSchema: dict[str, Any] = Field(
-        default_factory=dict,
-        description="JSON Schema for the tool's parameters",
-    )
-    annotations: ToolAnnotations | None = Field(
-        default=None,
-        description="Additional annotations provided by the server.",
-    )
-
-
-class ServerConfig(BaseModel):
-    name: str = Field(..., description="Name of the server")
     parameters: ServerParameters = Field(
         ...,
         description="Parameters used to start or connect to the MCP server.",
@@ -44,3 +18,21 @@ class ServerConfig(BaseModel):
         default_factory=list,
         description="List of tools provided by the server.",
     )
+
+    def get_tool(self, name: str) -> ServerTool:
+        for tool in self.tools:
+            if tool.name == name:
+                return tool
+        raise ValueError(f"Tool {name!r} not found in server {self.name!r}")
+
+    def clean(self):
+        for tool in self.tools:
+            # set inputSchema to {} if not properties
+            schema_type = tool.inputSchema.get("type")
+            schema_properties = tool.inputSchema.get("properties")
+            if schema_type == "object" and not schema_properties:
+                tool.inputSchema = {}
+
+            # clear all extras
+            if tool.annotations and tool.annotations.model_extra:
+                tool.annotations.model_extra.clear()

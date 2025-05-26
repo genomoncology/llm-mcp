@@ -1,0 +1,233 @@
+interactions:
+- request:
+    body: '{"method":"initialize","params":{"protocolVersion":"2025-03-26","capabilities":{"sampling":{},"roots":{"listChanged":true}},"clientInfo":{"name":"mcp","version":"0.1.0"}},"jsonrpc":"2.0","id":0}'
+    headers:
+      accept:
+      - application/json, text/event-stream
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '194'
+      content-type:
+      - application/json
+      host:
+      - gitmcp.io
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://gitmcp.io/simonw/llm
+  response:
+    body:
+      string: 'event: message
+
+        data: {"jsonrpc":"2.0","id":0,"result":{"protocolVersion":"2025-03-26","capabilities":{"tools":{"listChanged":true}},"serverInfo":{"name":"GitMCP","version":"1.1.0"}}}
+
+
+        '
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, mcp-session-id
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - mcp-session-id
+      Access-Control-Max-Age:
+      - '86400'
+      CF-RAY:
+      - 946044e4d936e811-ORD
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Type:
+      - text/event-stream
+      Date:
+      - Mon, 26 May 2025 21:12:10 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      alt-svc:
+      - h3=":443"; ma=86400
+      mcp-session-id:
+      - f2a2810f56435829a0fbb8f3aab60e385d1ef6d652c4f003dd3985f50e2cc1c9
+    status:
+      code: 200
+      message: OK
+- request:
+    body: '{"method":"notifications/initialized","jsonrpc":"2.0"}'
+    headers:
+      accept:
+      - application/json, text/event-stream
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '54'
+      content-type:
+      - application/json
+      host:
+      - gitmcp.io
+      mcp-session-id:
+      - f2a2810f56435829a0fbb8f3aab60e385d1ef6d652c4f003dd3985f50e2cc1c9
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://gitmcp.io/simonw/llm
+  response:
+    body:
+      string: ''
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, mcp-session-id
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - mcp-session-id
+      Access-Control-Max-Age:
+      - '86400'
+      CF-RAY:
+      - 946045288e70e811-ORD
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '0'
+      Date:
+      - Mon, 26 May 2025 21:12:20 GMT
+      Server:
+      - cloudflare
+      Vary:
+      - Accept-Encoding
+      alt-svc:
+      - h3=":443"; ma=86400
+    status:
+      code: 202
+      message: Accepted
+- request:
+    body: '{"method":"tools/list","jsonrpc":"2.0","id":1}'
+    headers:
+      accept:
+      - application/json, text/event-stream
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-length:
+      - '46'
+      content-type:
+      - application/json
+      host:
+      - gitmcp.io
+      mcp-session-id:
+      - f2a2810f56435829a0fbb8f3aab60e385d1ef6d652c4f003dd3985f50e2cc1c9
+      user-agent:
+      - python-httpx/0.28.1
+    method: POST
+    uri: https://gitmcp.io/simonw/llm
+  response:
+    body:
+      string: 'event: message
+
+        data: {"jsonrpc":"2.0","id":1,"result":{"tools":[{"name":"fetch_llm_documentation","description":"Fetch
+        entire documentation file from GitHub repository: simonw/llm. Useful for general
+        questions. Always call this tool first if asked about simonw/llm.","inputSchema":{"type":"object"},"annotations":{"_def":{"options":[{"_def":{"unknownKeys":"strip","catchall":{"_def":{"typeName":"ZodNever"},"~standard":{"version":1,"vendor":"zod"}},"typeName":"ZodObject"},"~standard":{"version":1,"vendor":"zod"},"_cached":null},{"_def":{"typeName":"ZodNull"},"~standard":{"version":1,"vendor":"zod"}}],"typeName":"ZodUnion"},"~standard":{"version":1,"vendor":"zod"}}},{"name":"search_llm_documentation","description":"Semantically
+        search within the fetched documentation from GitHub repository: simonw/llm.
+        Useful for specific queries.","inputSchema":{"type":"object","properties":{"query":{"type":"string","description":"The
+        search query to find relevant documentation"}},"required":["query"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"search_llm_code","description":"Search
+        for code within the GitHub repository: \"simonw/llm\" using the GitHub Search
+        API (exact match). Returns matching files for you to query further if relevant.","inputSchema":{"type":"object","properties":{"query":{"type":"string","description":"The
+        search query to find relevant code files"},"page":{"type":"number","description":"Page
+        number to retrieve (starting from 1). Each page contains 30 results."}},"required":["query"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}},{"name":"fetch_generic_url_content","description":"Generic
+        tool to fetch content from any absolute URL, respecting robots.txt rules.
+        Use this to retrieve referenced urls (absolute urls) that were mentioned in
+        previously fetched documentation.","inputSchema":{"type":"object","properties":{"url":{"type":"string","description":"The
+        URL of the document or page to fetch"}},"required":["url"],"additionalProperties":false,"$schema":"http://json-schema.org/draft-07/schema#"}}]}}
+
+
+        '
+    headers:
+      Access-Control-Allow-Headers:
+      - Content-Type, mcp-session-id
+      Access-Control-Allow-Methods:
+      - GET, POST, OPTIONS
+      Access-Control-Allow-Origin:
+      - '*'
+      Access-Control-Expose-Headers:
+      - mcp-session-id
+      Access-Control-Max-Age:
+      - '86400'
+      CF-RAY:
+      - 94604528df2ee811-ORD
+      Cache-Control:
+      - no-cache
+      Connection:
+      - keep-alive
+      Content-Type:
+      - text/event-stream
+      Date:
+      - Mon, 26 May 2025 21:12:20 GMT
+      Server:
+      - cloudflare
+      Transfer-Encoding:
+      - chunked
+      Vary:
+      - Accept-Encoding
+      alt-svc:
+      - h3=":443"; ma=86400
+      mcp-session-id:
+      - f2a2810f56435829a0fbb8f3aab60e385d1ef6d652c4f003dd3985f50e2cc1c9
+    status:
+      code: 200
+      message: OK
+- request:
+    body: ''
+    headers:
+      accept:
+      - application/json, text/event-stream
+      accept-encoding:
+      - gzip, deflate
+      connection:
+      - keep-alive
+      content-type:
+      - application/json
+      host:
+      - gitmcp.io
+      mcp-session-id:
+      - f2a2810f56435829a0fbb8f3aab60e385d1ef6d652c4f003dd3985f50e2cc1c9
+      user-agent:
+      - python-httpx/0.28.1
+    method: DELETE
+    uri: https://gitmcp.io/simonw/llm
+  response:
+    body:
+      string: '{"jsonrpc":"2.0","error":{"code":-32000,"message":"Method not allowed"},"id":null}'
+    headers:
+      CF-RAY:
+      - 94604567ee16e811-ORD
+      Connection:
+      - keep-alive
+      Content-Length:
+      - '82'
+      Content-Type:
+      - text/plain;charset=UTF-8
+      Date:
+      - Mon, 26 May 2025 21:12:30 GMT
+      Server:
+      - cloudflare
+      Vary:
+      - Accept-Encoding
+      alt-svc:
+      - h3=":443"; ma=86400
+    status:
+      code: 405
+      message: Method Not Allowed
+version: 1

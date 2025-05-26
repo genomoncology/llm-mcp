@@ -7,7 +7,7 @@ from mcp import types
 from mcp.client.session import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
 
-from . import convert_content, run_async, schema
+from . import run_async, schema, utils
 
 __all__ = [
     "call_tool_sync",
@@ -62,5 +62,5 @@ async def call_tool(
     ):
         await session.initialize()
         call = await session.call_tool(tool_name, arguments)
-        parts = [convert_content(p) for p in call.content]
+        parts = [utils.convert_content(p) for p in call.content]
         return parts[0] if len(parts) == 1 else parts
