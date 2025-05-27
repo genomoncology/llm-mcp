@@ -59,13 +59,7 @@ class RemoteServerParameters(BaseModel):
 class StdioServerParameters(_StdioServerParameters):
     """Extended StdioServerParameters with additional validation."""
 
-    @field_validator("command")
-    @classmethod
-    def validate_command(cls, v: str) -> str:
-        """Basic command validation."""
-        if not v or not v.strip():
-            raise ValueError("Command cannot be empty")
-        return v
+    pass
 
 
 ServerParameters = RemoteServerParameters | StdioServerParameters

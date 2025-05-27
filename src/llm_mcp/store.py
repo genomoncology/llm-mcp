@@ -1,7 +1,6 @@
 """Filesystem persistence for MCP server configurations."""
 
 import json
-import os
 from pathlib import Path
 
 import llm
@@ -11,11 +10,10 @@ from llm_mcp.schema import ServerConfig
 
 def mcp_dir() -> Path:
     """Get the mcp home directory."""
-    if env_home := os.environ.get("LLM_MCP_HOME"):
-        return Path(env_home)
-
     user_dir: Path = llm.user_dir()
-    return user_dir / "mcp"
+    mcp_dir_path: Path = user_dir / "mcp"
+    mcp_dir_path.mkdir(parents=True, exist_ok=True)
+    return mcp_dir_path
 
 
 def mcp_servers_dir() -> Path:

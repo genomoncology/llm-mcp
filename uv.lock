@@ -684,7 +684,7 @@ wheels = [
 
 [[package]]
 name = "llm"
-version = "0.26a0"
+version = "0.26a1"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -702,9 +702,9 @@ dependencies = [
     { name = "sqlite-migrate" },
     { name = "sqlite-utils" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3f/dd/177ef725e6a7e0da14e316991a2198503ce851edeef307609ae5072a8b39/llm-0.26a0.tar.gz", hash = "sha256:66676fcc6542b9070af37cb57097e64e10892bb80b9498b62be06ad3118ffad3", size = 64902, upload-time = "2025-05-14T00:40:42.832Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/d0/6c/fc342e58822bdbf852a0816bc23bd924895afef17119b1e5f723ee8e2bd1/llm-0.26a1.tar.gz", hash = "sha256:98911926c28959953a3eea5109ffa3f48969165672fdc0c924edc78a1c0a3521", size = 79603, upload-time = "2025-05-26T06:13:43.209Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/15/3c/681b0a07c7802540c057bee8449ae193bdacf166a674f78e6c69f3acd163/llm-0.26a0-py3-none-any.whl", hash = "sha256:927e7413b73c4aa590aba6f8361dfc39c36dc057ddffc58b995f87d750328e16", size = 66417, upload-time = "2025-05-14T00:40:41.081Z" },
+    { url = "https://files.pythonhosted.org/packages/63/f6/5c62686867772beed7c1c1617ecae66b8819913987ecec46bb62114192d4/llm-0.26a1-py3-none-any.whl", hash = "sha256:b8e0b24e34dc49b6870107b420378ee83d1bd785eae7230bc36bcb2be85af4ff", size = 76780, upload-time = "2025-05-26T06:13:41.307Z" },
 ]
 
 [[package]]
@@ -727,7 +727,6 @@ version = "0.0.1"
 source = { editable = "." }
 dependencies = [
     { name = "click" },
-    { name = "click-default-group" },
     { name = "llm" },
     { name = "mcp", extra = ["cli"] },
     { name = "pydantic" },
@@ -754,14 +753,12 @@ dev = [
     { name = "ruff" },
     { name = "syrupy" },
     { name = "tox-uv" },
-    { name = "types-click-default-group" },
 ]
 
 [package.metadata]
 requires-dist = [
     { name = "click", specifier = ">=8.2.0" },
-    { name = "click-default-group", specifier = ">=1.2.4" },
-    { name = "llm", specifier = "==0.26a0" },
+    { name = "llm", specifier = "==0.26a1" },
     { name = "mcp", extras = ["cli"], specifier = ">=1.9.0" },
     { name = "pydantic", specifier = ">=2.11.4" },
 ]
@@ -786,7 +783,6 @@ dev = [
     { name = "ruff", specifier = ">=0.11.5" },
     { name = "syrupy", specifier = ">=4.9.1" },
     { name = "tox-uv", specifier = ">=1.11.3" },
-    { name = "types-click-default-group", specifier = ">=1.2.0.20250513" },
 ]
 
 [[package]]
@@ -2120,18 +2116,6 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/98/1a/5f36851f439884bcfe8539f6a20ff7516e7b60f319bbaf69a90dc35cc2eb/typer-0.15.3.tar.gz", hash = "sha256:818873625d0569653438316567861899f7e9972f2e6e0c16dab608345ced713c", size = 101641, upload-time = "2025-04-28T21:40:59.204Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/48/20/9d953de6f4367163d23ec823200eb3ecb0050a2609691e512c8b95827a9b/typer-0.15.3-py3-none-any.whl", hash = "sha256:c86a65ad77ca531f03de08d1b9cb67cd09ad02ddddf4b34745b5008f43b239bd", size = 45253, upload-time = "2025-04-28T21:40:56.269Z" },
-]
-
-[[package]]
-name = "types-click-default-group"
-version = "1.2.0.20250513"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "click" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/12/08/3f2ce095feccc45d72b58e3a24e859da92c187914b162e69dd4087f648e5/types_click_default_group-1.2.0.20250513.tar.gz", hash = "sha256:44804c5de725699e029ee87a3ce8b25b183708681649aa16223b190d926e9c50", size = 7954, upload-time = "2025-05-13T03:06:13.586Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/f1/30/93282e923602e4802f5d23b928fa2052fa21530992c97ac8fe7bf4cb00ef/types_click_default_group-1.2.0.20250513-py3-none-any.whl", hash = "sha256:3a7af7f84356af7ea9a1d57b0574f1db938a4f40ec501f9d230500dc8aeb56bb", size = 8399, upload-time = "2025-05-13T03:06:12.445Z" },
 ]
 
 [[package]]

@@ -1,4 +1,4 @@
-from mcp.types import Tool as ServerTool
+from mcp.types import Tool as MCPTool
 from pydantic import BaseModel, Field
 
 from .parameters import ServerParameters
@@ -14,12 +14,12 @@ class ServerConfig(BaseModel):
         ...,
         description="Parameters used to start or connect to the MCP server.",
     )
-    tools: list[ServerTool] = Field(
+    tools: list[MCPTool] = Field(
         default_factory=list,
         description="List of tools provided by the server.",
     )
 
-    def get_tool(self, name: str) -> ServerTool:
+    def get_tool(self, name: str) -> MCPTool:
         for tool in self.tools:
             if tool.name == name:
                 return tool

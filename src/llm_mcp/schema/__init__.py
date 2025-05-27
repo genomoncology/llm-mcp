@@ -6,13 +6,13 @@ from .parameters import (
 )
 from .servers import (
     ServerConfig,
-    ServerTool,
+    MCPTool,
 )
 
 __all__ = [
+    "MCPTool",
     "RemoteServerParameters",
     "ServerConfig",
     "ServerParameters",
-    "ServerTool",
     "StdioServerParameters",
 ]

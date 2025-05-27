@@ -1,26 +1,11 @@
 """Business logic for managing MCP servers."""
 
-from . import http, stdio, store, utils
-from .schema import (
-    RemoteServerParameters,
-    ServerConfig,
-    ServerParameters,
-    ServerTool,
-)
+from . import store, transport, utils
+from .schema import ServerConfig
 
 
-def fetch_tools(params: ServerParameters) -> list[ServerTool]:
-    """Return the remote tool list for *params* (blocking)."""
-    tools: list[ServerTool]
-
-    if isinstance(params, RemoteServerParameters):
-        tools = http.list_tools_sync(params)
-    else:
-        tools = stdio.list_tools_sync(params)
-
-    # clean each tool
-
-    return tools
+class DuplicateServer(Exception):
+    pass
 
 
 def add_server(
@@ -48,10 +33,10 @@ def add_server(
 
     # check name if not overwriting
     if overwrite is False and name in store.list_servers():
-        raise ValueError(f"Server {name!r} already exists")
+        raise DuplicateServer(f"Server {name!r} already exists")
 
     # pull tool list
-    tools = fetch_tools(params)
+    tools = transport.list_tools_sync(params)
 
     # build & persist manifest
     cfg = ServerConfig(name=name, parameters=params, tools=tools)

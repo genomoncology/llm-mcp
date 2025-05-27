@@ -4,7 +4,7 @@ from typing import Any
 
 import pytest
 
-from llm_mcp import bg_runner
+from llm_mcp.transport import bg_runner
 
 
 async def _add(a: int, b: int) -> int:  # helper coroutine

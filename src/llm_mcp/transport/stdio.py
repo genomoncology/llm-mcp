@@ -9,11 +9,11 @@ from mcp import types
 from mcp.client.session import ClientSession
 from mcp.client.stdio import stdio_client
 
-from . import run_async, schema, utils
+from .. import schema, utils
+from .bg_runner import run_async
 
 __all__ = [
     "call_tool_sync",
-    "list_tools_sync",
 ]
 
 # list_tools
@@ -27,11 +27,6 @@ async def list_tools(params: schema.StdioServerParameters) -> list[types.Tool]:
         await session.initialize()
         result: types.ListToolsResult = await session.list_tools()
         return result.tools
-
-
-def list_tools_sync(params: schema.StdioServerParameters) -> list[types.Tool]:
-    """Blocking helper - fetch tool metadata from *params*."""
-    return run_async(list_tools(params))
 
 
 # call_tool

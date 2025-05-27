@@ -7,21 +7,15 @@ from mcp import types
 from mcp.client.session import ClientSession
 from mcp.client.streamable_http import streamablehttp_client
 
-from . import run_async, schema, utils
+from .. import schema, utils
+from .bg_runner import run_async
 
 __all__ = [
     "call_tool_sync",
-    "list_tools_sync",
 ]
 
 
 # list_tools
-
-
-def list_tools_sync(
-    params: schema.RemoteServerParameters,
-) -> list[types.Tool]:
-    return run_async(list_tools(params=params))
 
 
 async def list_tools(
