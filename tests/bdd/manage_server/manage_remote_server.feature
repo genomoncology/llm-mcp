@@ -1,7 +1,7 @@
 Feature: Add a remote MCP server and use it
 
   Background:
-    Given I run "llm mcp servers add https://gitmcp.io/simonw/llm"
+    Given I run "llm mcp servers add --exist-ok "https://gitmcp.io/simonw/llm""
 
   Scenario: Check the add server output
     Then the output should contain "✔ added server 'gitmcp_llm' with 4 tools"

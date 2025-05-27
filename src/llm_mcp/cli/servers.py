@@ -15,7 +15,8 @@ def servers():
 @click.argument("param")
 @click.option("--name", type=str)
 @click.option("--overwrite", is_flag=True)
-def add_server(param, name, overwrite):
+@click.option("--exist-ok", is_flag=True)
+def add_server(param, name, overwrite: bool, exist_ok: bool):
     """Register an MCP server locally by storing its Server Config."""
 
     try:
@@ -23,6 +24,7 @@ def add_server(param, name, overwrite):
             param,
             name=name,
             overwrite=overwrite,
+            exist_ok=exist_ok,
         )
     except manager.DuplicateServer as e:
         raise click.ClickException(f"Server {name!r} already exists") from e
@@ -52,3 +54,16 @@ def view_server(name: str, indent: int):
 
     # display with indent or remove indent completely if indent <= 0
     click.secho(cfg.model_dump_json(indent=indent if indent > 0 else None))
+
+
+@servers.command(name="remove")
+@click.argument("name")
+def remove_server(name):
+    """Remove an MCP server if it exists, raise exception otherwise."""
+
+    success = store.remove_server(name)
+
+    if success is False:
+        raise click.ClickException(f"Server {name!r} does not exist")
+
+    click.secho(f"✔ removed server {name!r}.", fg="green")

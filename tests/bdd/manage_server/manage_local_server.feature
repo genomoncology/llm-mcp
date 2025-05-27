@@ -1,7 +1,7 @@
 Feature: Add a remote MCP server and use it
 
   Background:
-    Given I run "llm mcp servers add "npx @wonderwhy-er/desktop-commander""
+    Given I run "llm mcp servers add --exist-ok "npx @wonderwhy-er/desktop-commander""
 
   Scenario: Check the add server output
     Then the output should contain "✔ added server 'desktop_commander' with 18 tools"

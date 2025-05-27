@@ -23,6 +23,10 @@ def mcp_servers_dir() -> Path:
     return servers
 
 
+def get_server_path(name: str) -> Path:
+    return mcp_servers_dir() / f"{name}.json"
+
+
 def save_server(config: ServerConfig) -> Path:
     """Save a server configuration to disk."""
     # remove any invalid tool input schema or annotations
@@ -50,6 +54,19 @@ def load_server(name: str) -> ServerConfig | None:
         server_config = ServerConfig.model_validate_json(path.read_text())
         server_config.clean()
     return server_config
+
+
+def remove_server(name: str) -> bool:
+    """Load a server configuration from disk."""
+    path = mcp_servers_dir() / f"{name}.json"
+
+    try:
+        path.unlink()
+        success = True
+    except FileNotFoundError:
+        success = False
+
+    return success
 
 
 def list_servers() -> list[str]:
