@@ -1,10 +1,19 @@
-from llm_mcp import schema, store
+from llm_mcp import schema
 
 
-def test_load_server(monkeypatch, data_dir):
-    monkeypatch.setenv("LLM_MCP_HOME", str(data_dir / "mcp"))
-    server_config = store.load_server("gitmcp_llm")
-    assert isinstance(server_config, schema.ServerConfig)
+def test_clean_server_config(data_dir):
+    # load file
+    file = data_dir / "gitmcp_llm.json"
+    assert file.is_file()
+    server_config = schema.ServerConfig.model_validate_json(file.read_text())
+
+    # check before cleaning
+    tool = server_config.get_tool("fetch_llm_documentation")
+    assert tool.annotations.model_extra != {}
+    assert tool.inputSchema != {}
+
+    # clean server config
+    server_config.clean()
 
     # check fetch_llm_documentation tool which must be "cleaned"
     tool = server_config.get_tool("fetch_llm_documentation")

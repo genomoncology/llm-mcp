@@ -135,6 +135,9 @@ skip_empty = true
 [tool.coverage.run]
 branch = true
 source = ["src"]
+omit = [
+    "src/*/__main__.py",
+]
 
 [project.scripts]
 llm_mcp = "llm_mcp.__main__:main"

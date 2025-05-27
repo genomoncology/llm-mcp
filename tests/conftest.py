@@ -1,14 +1,16 @@
 from pathlib import Path
 
-from pytest import fixture
+import pytest
+
+pytestmark = pytest.mark.vcr(record_mode="new_episodes")
 
 
-@fixture(scope="module")
+@pytest.fixture(scope="module")
 def vcr_config():
     """Ensure tokens are not stored to GitHub."""
     return {"filter_headers": ["authorization"]}
 
 
-@fixture(scope="session")
+@pytest.fixture(scope="session")
 def data_dir() -> Path:
     return Path(__file__).parent / "data"
