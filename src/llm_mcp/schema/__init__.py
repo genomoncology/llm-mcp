@@ -8,6 +8,10 @@ from .servers import (
     ServerConfig,
     MCPTool,
 )
+from .toolboxes import (
+    ToolboxConfig,
+    ToolboxTool,
+)
 
 __all__ = [
     "MCPTool",
@@ -15,4 +19,6 @@ __all__ = [
     "ServerConfig",
     "ServerParameters",
     "StdioServerParameters",
+    "ToolboxConfig",
+    "ToolboxTool",
 ]
