@@ -91,7 +91,7 @@ llm -T tool_name "your prompt" --td
 
 ## Resources
 
-- [Simon Willison's blog post on LLM 0.26 tool support](https://simonwillison.net/2025/May/27/llm-026/)
+- [Simon Willison's blog post on LLM 0.26 tool support](https://simonwillison.net/2025/May/27/llm-tools/)
 - [LLM Tools documentation](https://llm.datasette.io/en/stable/tools.html)
 - [Model Context Protocol](https://modelcontextprotocol.io/)
 
