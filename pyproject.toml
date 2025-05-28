@@ -1,6 +1,6 @@
 [project]
 name = "llm-mcp"
-version = "0.0.1"
+version = "0.0.2"
 description = "llm implementation of MCP for clients and servers."
 authors = [{ name = "Ian Maurer", email = "ian@genomoncology.com" }]
 readme = "README.md"

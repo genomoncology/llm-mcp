@@ -2,93 +2,99 @@
 
 [![Release](https://img.shields.io/github/v/release/imaurer/llm-mcp)](https://img.shields.io/github/v/release/imaurer/llm-mcp)
 [![Build status](https://img.shields.io/github/actions/workflow/status/imaurer/llm-mcp/main.yml?branch=main)](https://github.com/imaurer/llm-mcp/actions/workflows/main.yml?query=branch%3Amain)
-[![codecov](https://codecov.io/gh/imaurer/llm-mcp/branch/main/graph/badge.svg)](https://codecov.io/gh/imaurer/llm-mcp)
-[![MIT License](https://img.shields.io/github/license/imaurer/llm-mcp)](https://img.shields.io/github/license/imaurer/llm-mcp)
 
-[
-`llm`](https://llm.datasette.io/) [plugin](https://llm.datasette.io/en/stable/plugins/directory.html)
-for creating MCP clients and servers.
+[LLM](https://llm.datasette.io/) plugin for Model Context Protocol (MCP) support, enabling LLMs to use tools from any MCP server.
+
+## Requirements
+
+- LLM version 0.26 or higher (for tool support)
+- Python 3.10+
 
 ## Installation
 
+First, install or upgrade LLM to version 0.26+:
+
 ```bash
-pip install llm-mcp
+uv tool install llm
+# or upgrade if you have it already
+uv tool upgrade llm
 ```
 
-## MCP Servers
+Then install the plugin:
 
-This package provides a bridge between MCP servers and the `llm` package,
-allowing you to use MCP tools with LLM models. The bridge supports both stdio
-and HTTP-based MCP servers and provides a synchronous interface that's safe to
-use in any context, including Jupyter notebooks, FastAPI applications, and
-more.
-
-### Command Line Usage
-
-(todo)
-
-### Programmatic Usage
-
-For programmatic usage, you can wrap MCP tools as `llm.Tool` objects:
-
-```python
-import os
-
-from llm import get_model
-from llm_mcp import wrap_stdio, stdio
-
-# convert stdio tool to llm tools
-tools = wrap_stdio(stdio.ServerParameters(
-    command="npx",
-    args=["-y", "@wonderwhy-er/desktop-commander"],
-))
-
-# wrap_mcp(command string) equivalent to wrap_stdio(stdio.ServerParameters)
-# from llm_mcp import wrap_mcp
-# tools = wrap_mcp("npx -y @wonderwhy-er/desktop-commander")
-
-# Use the tools with a model
-model = get_model("gpt-4.1-nano")
-response = model.chain(
-    f"Display the text found in the secret.txt file in {os.getcwd()}",
-    tools=tools,
-)
-print(response.text())
+```bash
+llm install llm-mcp
 ```
 
-**Output:**
-> The text found in the secret.txt file is: "Why don't pelicans like to tip
-> waiters?"
+## Basic Usage
 
-### HTTP Servers
+### Adding MCP Servers
 
-For HTTP-based MCP servers, use the HTTP bridge instead:
-
-```python
-from llm import get_model
-
-from llm_mcp import wrap_http, http
-
-tools = wrap_http(http.ServerParameters("https://gitmcp.io/simonw/llm"))
-
-# wrap_mcp(url) is equivalent to wrap_http(http.ServerParameters)
-# from llm_mcp import wrap_mcp
-# tools = wrap_mcp("https://gitmcp.io/simonw/llm")
-
-model = get_model("gpt-4.1-nano")
-
-response = model.chain(
-    "Search llm github for CHANGELOG and display 1 sentence summary of the latest entry.",
-    tools=tools,
-)
-print(response.text())
+Add a remote MCP server:
+```bash
+llm mcp servers add "https://gitmcp.io/simonw/llm"
+✔ added server 'gitmcp_llm' with 4 tools
 ```
 
-**Output:**
-> The latest entry in the changelog (version 0.26a0, dated 2025-05-13)
-> introduces alpha support for tools in LLM, allowing models with tool
-> capability (including the default OpenAI models) to execute Python functions
-> as
-> part of responding to a prompt, with usage available in both the command-line
-> interface and Python API, and support for defining new tools via plugin
-> hooks.
+Add a local MCP server via npx:
+```bash
+llm mcp servers add "npx @wonderwhy-er/desktop-commander"
+✔ added server 'desktop_commander' with 18 tools
+```
+
+### Managing Servers
+
+List servers:
+```bash
+llm mcp servers list
+```
+
+View server details:
+```bash
+llm mcp servers view gitmcp_llm
+```
+
+Remove a server:
+```bash
+llm mcp servers remove gitmcp_llm
+```
+
+### Using Tools
+
+Once a server is added, its tools become available to use with any LLM model:
+
+```bash
+# Use a single tool
+llm -T read_file "What is the secret word in secret.txt?"
+
+# Use multiple tools
+llm -T search_llm_documentation -T fetch_generic_url_content \
+  "Find docs for how to specify a schema in llm project"
+
+# Debug mode to see tool calls
+llm -T tool_name "your prompt" --td
+```
+
+## Roadmap to v0.1
+
+- ✅ v0.0.2 - Basic MCP server management and tool usage
+  - `llm mcp servers` for add, list, view
+  - Convert MCP tools to LLM tools
+  - Support for stdio and HTTP servers
+
+- 🚧 v0.1.0 - Advanced features
+  - Remote server authentication (tokens, OAuth)
+  - `llm mcp toolboxes` - create and manage tool collections
+  - Support vanilla Python functions as tools
+  - `llm mcp proxy` - start MCP proxy server for toolboxes
+  - Proxy authentication
+
+## Resources
+
+- [Simon Willison's blog post on LLM 0.26 tool support](https://simonwillison.net/2025/May/27/llm-026/)
+- [LLM Tools documentation](https://llm.datasette.io/en/stable/tools.html)
+- [Model Context Protocol](https://modelcontextprotocol.io/)
+
+## Safety Warning
+
+⚠️ **Tools can be dangerous!** Be careful about which tools you enable when working with untrusted content. See the [LLM tools documentation](https://llm.datasette.io/en/stable/tools.html#tools-can-be-dangerous) for important security considerations.
