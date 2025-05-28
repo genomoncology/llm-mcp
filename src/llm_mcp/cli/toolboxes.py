@@ -353,6 +353,233 @@ def clear_default_toolbox():
     click.echo("✔ cleared default toolbox")
 
 
+@toolboxes.command(name="remove")
+@click.argument("name")
+@click.option("--force", is_flag=True, help="Remove without confirmation")
+def remove_toolbox(name: str, force: bool):
+    """Remove a toolbox."""
+    # Check if toolbox exists
+    if not store.load_toolbox(name):
+        raise click.ClickException(f"Toolbox '{name}' not found")
+
+    # Check if it's the default toolbox
+    if store.get_default_toolbox() == name:
+        if not force and not click.confirm(
+            f"'{name}' is the default toolbox. Remove anyway?"
+        ):
+            return
+        # Clear default before removing
+        store.set_default_toolbox(None)
+
+    # Confirm removal if not forced
+    if not force:
+        toolbox = store.load_toolbox(name)
+        tool_count = len(toolbox.tools) if toolbox else 0
+        if not click.confirm(
+            f"Remove toolbox '{name}' with {tool_count} tools?"
+        ):
+            return
+
+    # Remove the toolbox
+    success = store.remove_toolbox(name)
+    if success:
+        click.secho(f"✔ removed toolbox '{name}'", fg="green")
+    else:
+        raise click.ClickException(f"Failed to remove toolbox '{name}'")
+
+
+@toolboxes.command(name="validate")
+@click.argument("name", required=False)
+@click.option("--fix", is_flag=True, help="Fix detected issues automatically")
+@click.option(
+    "--force", is_flag=True, help="Skip confirmations when fixing issues"
+)
+def validate_toolboxes(name: str | None, fix: bool, force: bool):
+    """Validate toolbox integrity and fix issues.
+
+    Checks for missing servers, tools, and syntax errors in function code.
+    If NAME is provided, validates only that toolbox. Otherwise, validates all toolboxes.
+
+    Use --fix to automatically repair issues by removing invalid tools.
+    Add --force to skip confirmation prompts when fixing.
+    """
+
+    # Load all toolboxes or just the specified one
+    toolboxes = _load_toolboxes_for_validation(name)
+    if not toolboxes:
+        if name:
+            raise click.ClickException(f"Toolbox '{name}' not found")
+        else:
+            click.echo("No toolboxes found to validate.")
+            return
+
+    # Track stats for summary
+    total_issues = 0
+    fixed_issues = 0
+    empty_toolboxes = []
+
+    # Validate each toolbox
+    for toolbox_name, toolbox in toolboxes.items():
+        issues_found, fixed_count, is_empty = _validate_single_toolbox(
+            toolbox_name, toolbox, fix, force
+        )
+
+        total_issues += len(issues_found)
+        fixed_issues += fixed_count
+
+        if is_empty:
+            empty_toolboxes.append(toolbox_name)
+
+    # Handle empty toolboxes
+    _handle_empty_toolboxes(empty_toolboxes, fix, force)
+
+    # Show summary
+    _show_validation_summary(total_issues, fixed_issues, fix)
+
+
+def _load_toolboxes_for_validation(
+    name: str | None,
+) -> dict[str, ToolboxConfig]:
+    """Load toolboxes for validation based on the provided name or all toolboxes."""
+    if name:
+        # Validate a specific toolbox
+        toolbox = store.load_toolbox(name)
+        if toolbox:
+            return {name: toolbox}
+        return {}
+    else:
+        # Validate all toolboxes
+        toolboxes = {}
+        for toolbox_name in store.list_toolboxes():
+            toolbox = store.load_toolbox(toolbox_name)
+            if toolbox:
+                toolboxes[toolbox_name] = toolbox
+        return toolboxes
+
+
+def _validate_single_toolbox(
+    toolbox_name: str, toolbox: ToolboxConfig, fix: bool, force: bool
+) -> tuple[list, int, bool]:
+    """Validate a single toolbox and optionally fix issues.
+
+    Returns:
+        tuple: (list of issues, number of fixed issues, is toolbox empty)
+    """
+    from llm_mcp.toolbox_builder import validate_toolbox
+
+    # Default toolbox status display
+    default = store.get_default_toolbox()
+    default_marker = " (default)" if toolbox_name == default else ""
+
+    # Validate and collect issues
+    issues = validate_toolbox(toolbox)
+
+    if not issues:
+        click.secho(
+            f"✔ Toolbox '{toolbox_name}'{default_marker} - No issues found",
+            fg="green",
+        )
+        return issues, 0, False
+
+    # Found issues - display them
+    click.secho(
+        f"⚠ Toolbox '{toolbox_name}'{default_marker} - {len(issues)} issue(s) found:",
+        fg="yellow",
+    )
+
+    _display_issues(issues)
+
+    # Fix issues if requested
+    fixed_count = 0
+    if fix and issues:
+        if not force and not click.confirm(
+            f"Fix {len(issues)} issues in toolbox '{toolbox_name}'?"
+        ):
+            click.echo(f"Skipping fixes for '{toolbox_name}'")
+            return issues, 0, False
+
+        # Apply fixes for all issues
+        for issue in issues:
+            if issue.fix_callback:
+                issue.fix()
+                fixed_count += 1
+                click.echo(f"  ✓ Fixed: {issue.message}")
+
+        # Check if toolbox is now empty
+        reloaded_toolbox = store.load_toolbox(
+            toolbox_name
+        )  # Reload after fixes
+        is_empty = not reloaded_toolbox or not reloaded_toolbox.tools
+        return issues, fixed_count, is_empty
+
+    return issues, 0, False
+
+
+def _display_issues(issues):
+    """Display validation issues with proper formatting."""
+    from llm_mcp.toolbox_builder import ValidationIssue
+
+    for i, issue in enumerate(issues, 1):
+        tool_name = _get_tool_name_for_display(issue.tool)
+        severity_color = (
+            "yellow"
+            if issue.severity == ValidationIssue.SEVERITY_WARNING
+            else "red"
+        )
+        click.secho(f"  {i}. {tool_name}: {issue.message}", fg=severity_color)
+
+
+def _get_tool_name_for_display(tool):
+    """Get a display name for a tool in validation messages."""
+    if not tool:
+        return "[Unnamed tool]"
+
+    if tool.name:
+        return tool.name
+    elif tool.mcp_ref:
+        _, tool_part = _parse_mcp_reference(tool.mcp_ref)
+        return tool_part
+    elif tool.function_name:
+        return tool.function_name
+
+    return "[Unnamed tool]"
+
+
+def _handle_empty_toolboxes(
+    empty_toolboxes: list[str], fix: bool, force: bool
+):
+    """Handle toolboxes that became empty after validation fixes."""
+    for toolbox_name in empty_toolboxes:
+        if fix:
+            message = f"Toolbox '{toolbox_name}' is now empty. Remove it?"
+            if force or click.confirm(message):
+                store.remove_toolbox(toolbox_name)
+                click.secho(
+                    f"✓ Removed empty toolbox '{toolbox_name}'", fg="green"
+                )
+        else:
+            click.secho(
+                f"⚠ Toolbox '{toolbox_name}' has no valid tools", fg="yellow"
+            )
+
+
+def _show_validation_summary(total_issues: int, fixed_issues: int, fix: bool):
+    """Show a summary of validation results."""
+    if total_issues > 0:
+        if fix:
+            click.secho(
+                f"Summary: Found {total_issues} issue(s), fixed {fixed_issues}",
+                fg="yellow" if fixed_issues < total_issues else "green",
+            )
+        else:
+            click.secho(
+                f"Summary: Found {total_issues} issue(s). Use --fix to repair.",
+                fg="yellow",
+            )
+    else:
+        click.secho("Summary: All toolboxes are valid", fg="green")
+
+
 def _parse_mcp_reference(mcp_ref: str) -> tuple[str, str]:
     """Parse an MCP reference into server and tool names."""
     parts = mcp_ref.split("/")

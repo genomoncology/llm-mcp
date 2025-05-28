@@ -239,6 +239,227 @@ def _parse_mcp_reference(mcp_ref: str) -> tuple[str, str]:
     return parts[0], parts[1]
 
 
+# Type for validation fix callbacks
+FixCallback = Callable[[], None]
+
+
+class ValidationIssue:
+    """Represents an issue found during toolbox validation."""
+
+    SEVERITY_WARNING = "warning"
+    SEVERITY_ERROR = "error"
+
+    def __init__(
+        self,
+        tool: ToolboxTool | None,
+        severity: str,
+        message: str,
+        fix_callback: FixCallback | None = None,
+    ):
+        self.tool = tool
+        self.severity = severity
+        self.message = message
+        self.fix_callback = fix_callback
+
+    def fix(self) -> None:
+        """Apply the fix for this issue if a fix callback is available."""
+        if self.fix_callback:
+            self.fix_callback()
+
+    def __str__(self) -> str:
+        return f"[{self.severity.upper()}] {self.message}"
+
+
+def validate_toolbox(toolbox: ToolboxConfig) -> list[ValidationIssue]:
+    """Validate a toolbox configuration and return a list of issues.
+
+    Checks:
+    - For MCP tools: Server exists and tool is present in the server
+    - For function tools: Function code is valid
+    - For toolbox class tools: Class code is valid
+    """
+    issues = []
+
+    # Process each tool in the toolbox
+    for tool in toolbox.tools:
+        if tool.source_type == "mcp":
+            issues.extend(_validate_mcp_tool(tool, toolbox))
+        elif tool.source_type == "function":
+            issues.extend(_validate_function_tool(tool, toolbox))
+        elif tool.source_type == "toolbox_class":
+            issues.extend(_validate_toolbox_class_tool(tool, toolbox))
+
+    return issues
+
+
+def _validate_mcp_tool(
+    tool: ToolboxTool, toolbox: ToolboxConfig
+) -> list[ValidationIssue]:
+    """Validate an MCP tool reference."""
+    issues = []
+
+    # Check for missing reference
+    if not tool.mcp_ref:
+
+        def fix_callback() -> None:
+            _fix_remove_tool(toolbox, tool)
+
+        issues.append(
+            ValidationIssue(
+                tool=tool,
+                severity=ValidationIssue.SEVERITY_ERROR,
+                message="MCP tool is missing reference",
+                fix_callback=fix_callback,
+            )
+        )
+        return issues
+
+    # Validate reference format
+    try:
+        server_name, tool_name = _parse_mcp_reference(tool.mcp_ref)
+    except ValueError as e:
+
+        def fix_callback() -> None:
+            _fix_remove_tool(toolbox, tool)
+
+        issues.append(
+            ValidationIssue(
+                tool=tool,
+                severity=ValidationIssue.SEVERITY_ERROR,
+                message=str(e),
+                fix_callback=fix_callback,
+            )
+        )
+        return issues
+
+    # Check if server exists
+    server_config = store.load_server(server_name)
+    if not server_config:
+
+        def fix_callback() -> None:
+            _fix_remove_tool(toolbox, tool)
+
+        issues.append(
+            ValidationIssue(
+                tool=tool,
+                severity=ValidationIssue.SEVERITY_ERROR,
+                message=f"Server '{server_name}' not found",
+                fix_callback=fix_callback,
+            )
+        )
+        return issues
+
+    # Check if tool exists in server
+    if not any(t.name == tool_name for t in server_config.tools):
+
+        def fix_callback() -> None:
+            _fix_remove_tool(toolbox, tool)
+
+        issues.append(
+            ValidationIssue(
+                tool=tool,
+                severity=ValidationIssue.SEVERITY_ERROR,
+                message=f"Tool '{tool_name}' not found in server '{server_name}'",
+                fix_callback=fix_callback,
+            )
+        )
+
+    return issues
+
+
+def _validate_function_tool(
+    tool: ToolboxTool, toolbox: ToolboxConfig
+) -> list[ValidationIssue]:
+    """Validate a function tool."""
+    issues = []
+
+    # Check for missing code
+    if not tool.code:
+
+        def fix_callback() -> None:
+            _fix_remove_tool(toolbox, tool)
+
+        issues.append(
+            ValidationIssue(
+                tool=tool,
+                severity=ValidationIssue.SEVERITY_ERROR,
+                message="Function tool is missing code",
+                fix_callback=fix_callback,
+            )
+        )
+        return issues
+
+    # Verify function code is valid Python
+    try:
+        compile(tool.code, "<function>", "exec")
+    except SyntaxError as e:
+
+        def fix_callback() -> None:
+            _fix_remove_tool(toolbox, tool)
+
+        issues.append(
+            ValidationIssue(
+                tool=tool,
+                severity=ValidationIssue.SEVERITY_ERROR,
+                message=f"Syntax error in function code: {e}",
+                fix_callback=fix_callback,
+            )
+        )
+
+    return issues
+
+
+def _validate_toolbox_class_tool(
+    tool: ToolboxTool, toolbox: ToolboxConfig
+) -> list[ValidationIssue]:
+    """Validate a toolbox class tool."""
+    issues = []
+
+    # Check for missing code
+    if not tool.code:
+
+        def fix_callback() -> None:
+            _fix_remove_tool(toolbox, tool)
+
+        issues.append(
+            ValidationIssue(
+                tool=tool,
+                severity=ValidationIssue.SEVERITY_ERROR,
+                message="Toolbox class tool is missing code",
+                fix_callback=fix_callback,
+            )
+        )
+        return issues
+
+    # Verify class code is valid Python
+    try:
+        compile(tool.code, "<toolbox_class>", "exec")
+    except SyntaxError as e:
+
+        def fix_callback() -> None:
+            _fix_remove_tool(toolbox, tool)
+
+        issues.append(
+            ValidationIssue(
+                tool=tool,
+                severity=ValidationIssue.SEVERITY_ERROR,
+                message=f"Syntax error in toolbox class code: {e}",
+                fix_callback=fix_callback,
+            )
+        )
+
+    return issues
+
+
+def _fix_remove_tool(toolbox: ToolboxConfig, tool: ToolboxTool) -> None:
+    """Fix helper to remove a tool from a toolbox and save the updated toolbox."""
+    # Remove the tool from the toolbox
+    toolbox.tools = [t for t in toolbox.tools if t is not tool]
+
+    # Save the updated toolbox
+    store.save_toolbox(toolbox)
+
+
 def register_toolbox_tools(register):
     """Register tools from all toolboxes or just the default one."""
     default_toolbox_name = store.get_default_toolbox()
@@ -247,6 +468,26 @@ def register_toolbox_tools(register):
         # Load and register only the default toolbox
         toolbox_config = store.load_toolbox(default_toolbox_name)
         if toolbox_config:
+            # Validate toolbox before registering
+            issues = validate_toolbox(toolbox_config)
+            if issues:
+                try:
+                    import click
+
+                    click.echo(
+                        click.style(
+                            f"⚠ WARNING: Default toolbox '{default_toolbox_name}' has {len(issues)} issue(s). Run 'llm mcp toolboxes validate {default_toolbox_name}' to view details.",
+                            fg="yellow",
+                            bold=True,
+                        )
+                    )
+                except ImportError:
+                    # Click might not be available in all contexts
+                    print(
+                        f"WARNING: Default toolbox '{default_toolbox_name}' has {len(issues)} issue(s)."
+                    )
+
+            # Still register the toolbox despite issues
             ToolboxClass = build_toolbox_class(toolbox_config)
             register(ToolboxClass, name=toolbox_config.name)
     else:
@@ -254,5 +495,7 @@ def register_toolbox_tools(register):
         for toolbox_name in store.list_toolboxes():
             toolbox_config = store.load_toolbox(toolbox_name)
             if toolbox_config:
+                # Validate but don't show warnings for non-default toolboxes
+                # This keeps the startup clean while still validating what's used
                 ToolboxClass = build_toolbox_class(toolbox_config)
                 register(ToolboxClass, name=toolbox_config.name)

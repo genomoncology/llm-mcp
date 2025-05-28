@@ -15,7 +15,7 @@ class ToolboxTool(BaseModel):
     mcp_ref: str | None = Field(
         None,
         description="MCP tool reference as 'server_name/tool_name'",
-        pattern="^[a-z0-9_]+/[a-zA-Z0-9_]+$",
+        pattern="^[a-z0-9_-]+/[a-zA-Z0-9_-]+$",
     )
 
     # For Python functions/classes

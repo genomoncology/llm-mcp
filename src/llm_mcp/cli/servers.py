@@ -12,22 +12,49 @@ def servers():
 
 
 @servers.command(name="add")
-@click.argument("param")
+@click.argument("param", required=False)
 @click.option("--name", type=str)
 @click.option("--overwrite", is_flag=True)
 @click.option("--exist-ok", is_flag=True)
-def add_server(param, name, overwrite: bool, exist_ok: bool):
-    """Register an MCP server locally by storing its Server Config."""
+@click.option(
+    "--manifest",
+    type=str,
+    help="Path to a JSON manifest file or a JSON string for offline/stub server registration",
+)
+def add_server(
+    param, name, overwrite: bool, exist_ok: bool, manifest: str | None = None
+):
+    """Register an MCP server locally by storing its Server Config.
+
+    If --manifest is provided, the server will be registered offline without
+    attempting to connect to a live MCP server. The manifest can be a path to a
+    JSON file or a JSON string literal.
+
+    When using --manifest, 'parameters' is accepted as an alias for 'inputSchema' in tool definitions,
+    and hyphens are allowed in server names.
+    """
+    if param is None and manifest is None:
+        raise click.ClickException(
+            "Either a server parameter or --manifest must be provided"
+        )
+
+    if param is not None and manifest is not None:
+        raise click.ClickException(
+            "Cannot provide both a server parameter and --manifest"
+        )
 
     try:
         cfg = manager.add_server(
-            param,
+            param if manifest is None else None,
             name=name,
             overwrite=overwrite,
             exist_ok=exist_ok,
+            manifest_data=manifest,
         )
     except manager.DuplicateServer as e:
         raise click.ClickException(f"Server {name!r} already exists") from e
+    except ValueError as e:
+        raise click.ClickException(str(e)) from e
 
     click.secho(
         f"✔ added server {cfg.name!r} with {len(cfg.tools)} tools",
