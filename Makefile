@@ -41,7 +41,8 @@ test: ## Test the code with pytest
 .PHONY: cov
 cov: ## Generate HTML coverage report
 	@echo "🚀 Generating HTML coverage report"
-	@uv run python -m pytest --cov --cov-config=pyproject.toml --cov-report=html
+	@uv run python -m pytest --cov --record-mode=rewrite --cov-config=pyproject.toml --cov-report=html
+	@uv run coverage report --show-missing && uv run coverage html
 
 .PHONY: build
 build: clean-build ## Build wheel file

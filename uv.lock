@@ -684,7 +684,7 @@ wheels = [
 
 [[package]]
 name = "llm"
-version = "0.26a0"
+version = "0.26"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "click" },
@@ -702,9 +702,9 @@ dependencies = [
     { name = "sqlite-migrate" },
     { name = "sqlite-utils" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/3f/dd/177ef725e6a7e0da14e316991a2198503ce851edeef307609ae5072a8b39/llm-0.26a0.tar.gz", hash = "sha256:66676fcc6542b9070af37cb57097e64e10892bb80b9498b62be06ad3118ffad3", size = 64902, upload-time = "2025-05-14T00:40:42.832Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/4e/88/1acdae8cc6122d3ab2d3d30477d3273608f92177a6bb17ab98881af65627/llm-0.26.tar.gz", hash = "sha256:c2e9ddbc582da10c61112c0f983383fa0dc7bee3ca7d6f2ade1a2d003771eb1b", size = 82037, upload-time = "2025-05-27T20:36:22.891Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/15/3c/681b0a07c7802540c057bee8449ae193bdacf166a674f78e6c69f3acd163/llm-0.26a0-py3-none-any.whl", hash = "sha256:927e7413b73c4aa590aba6f8361dfc39c36dc057ddffc58b995f87d750328e16", size = 66417, upload-time = "2025-05-14T00:40:41.081Z" },
+    { url = "https://files.pythonhosted.org/packages/da/5f/ed9d5c47c46632f2c3a844c14412f434bc1263faa4890306b5f911cd3aaf/llm-0.26-py3-none-any.whl", hash = "sha256:93dc331facbfb909f946df8812fb1d627ec9ce764aab2ebd29f9011ed647339c", size = 79376, upload-time = "2025-05-27T20:36:21.341Z" },
 ]
 
 [[package]]
@@ -726,8 +726,10 @@ name = "llm-mcp"
 version = "0.0.1"
 source = { editable = "." }
 dependencies = [
+    { name = "click" },
     { name = "llm" },
     { name = "mcp", extra = ["cli"] },
+    { name = "pydantic" },
 ]
 
 [package.dev-dependencies]
@@ -755,8 +757,10 @@ dev = [
 
 [package.metadata]
 requires-dist = [
-    { name = "llm", specifier = "==0.26a0" },
+    { name = "click", specifier = ">=8.2.0" },
+    { name = "llm", specifier = "==0.26" },
     { name = "mcp", extras = ["cli"], specifier = ">=1.9.0" },
+    { name = "pydantic", specifier = ">=2.11.4" },
 ]
 
 [package.metadata.requires-dev]

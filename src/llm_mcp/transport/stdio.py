@@ -7,25 +7,19 @@ from typing import Any
 
 from mcp import types
 from mcp.client.session import ClientSession
-from mcp.client.stdio import (
-    StdioServerParameters as ServerParameters,
-)
-from mcp.client.stdio import (
-    stdio_client,
-)
+from mcp.client.stdio import stdio_client
 
-from . import convert_content, run_async
+from .. import schema, utils
+from .bg_runner import run_async
 
 __all__ = [
-    "ServerParameters",
     "call_tool_sync",
-    "list_tools_sync",
 ]
 
 # list_tools
 
 
-async def list_tools(params: ServerParameters) -> list[types.Tool]:
+async def list_tools(params: schema.StdioServerParameters) -> list[types.Tool]:
     async with (
         stdio_client(params) as (reader, writer),
         ClientSession(reader, writer) as session,
@@ -35,16 +29,11 @@ async def list_tools(params: ServerParameters) -> list[types.Tool]:
         return result.tools
 
 
-def list_tools_sync(params: ServerParameters) -> list[types.Tool]:
-    """Blocking helper - fetch tool metadata from *params*."""
-    return run_async(list_tools(params))
-
-
 # call_tool
 
 
 async def call_tool(
-    params: ServerParameters,
+    params: schema.StdioServerParameters,
     tool_name: str,
     arguments: Mapping[str, Any] | None = None,
 ) -> Any:
@@ -56,12 +45,12 @@ async def call_tool(
         call: types.CallToolResult = await session.call_tool(
             tool_name, dict(arguments or {})
         )
-        parts = [convert_content(p) for p in call.content]
+        parts = [utils.convert_content(p) for p in call.content]
         return parts[0] if len(parts) == 1 else parts
 
 
 def call_tool_sync(
-    params: ServerParameters,
+    params: schema.StdioServerParameters,
     tool_name: str,
     arguments: Mapping[str, Any] | None = None,
 ) -> Any:

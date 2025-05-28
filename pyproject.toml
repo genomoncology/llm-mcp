@@ -17,8 +17,11 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    "llm==0.26a0",
+    "click>=8.2.0",
+#    "click-default-group>=1.2.4",
+    "llm==0.26",
     "mcp[cli]>=1.9.0",
+    "pydantic>=2.11.4",
 ]
 
 [project.urls]
@@ -46,13 +49,12 @@ dev = [
     "ruff>=0.11.5",
     "syrupy>=4.9.1",
     "tox-uv>=1.11.3",
+#    "types-click-default-group>=1.2.0.20250513",
 ]
 
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-
-
 
 [tool.mypy]
 files = ["src"]
@@ -133,3 +135,12 @@ skip_empty = true
 [tool.coverage.run]
 branch = true
 source = ["src"]
+omit = [
+    "src/*/__main__.py",
+]
+
+[project.scripts]
+llm_mcp = "llm_mcp.__main__:main"
+
+[project.entry-points."llm"]
+mcp = "llm_mcp.plugin"

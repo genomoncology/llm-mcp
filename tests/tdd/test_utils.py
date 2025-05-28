@@ -1,17 +1,86 @@
-from __future__ import annotations
-
 import base64
+from datetime import timedelta
 from types import SimpleNamespace
 
 import pytest
 
-from llm_mcp.converters import convert_content
+from llm_mcp.schema import RemoteServerParameters, StdioServerParameters
+from llm_mcp.utils import convert_content, generate_server_name, parse_params
+
+
+def test_as_kwargs_timedelta_conversion():
+    params = RemoteServerParameters(url="https://example.com")
+    kwargs = params.as_kwargs()
+
+    assert kwargs == {
+        "headers": {},
+        "timeout": timedelta(seconds=30),
+        "sse_read_timeout": timedelta(seconds=300),
+        "terminate_on_close": True,
+    }
+
+    # Verify they are actual timedelta objects
+    assert isinstance(kwargs["timeout"], timedelta)
+    assert isinstance(kwargs["sse_read_timeout"], timedelta)
+
+
+@pytest.mark.parametrize(
+    "param, expected",
+    [
+        (
+            "https://example.com/api",
+            RemoteServerParameters(url="https://example.com/api"),
+        ),
+        (
+            "VAR1=value1 VAR2=value2 command --arg1 --arg2",
+            StdioServerParameters(
+                command="command",
+                args=["--arg1", "--arg2"],
+                env={"VAR1": "value1", "VAR2": "value2"},
+            ),
+        ),
+        (
+            "npx cmd --flag",
+            StdioServerParameters(
+                command="npx", args=["cmd", "--flag"], env=None
+            ),
+        ),
+        (
+            "",
+            None,
+        ),
+    ],
+)
+def test_convert(param, expected):
+    assert parse_params(param) == expected
+
+
+@pytest.mark.parametrize(
+    "param, expected_name",
+    [
+        ("npx -y @modelcontextprotocol/server-filesystem /home", "filesystem"),
+        ("uvx mcp-server-sqlite --db-path test.db", "sqlite_test"),
+        ("https://api.example.com/mcp", "example_api"),
+        ("java -jar weather-server.jar", "weather"),
+        ("docker run -i mcp/perplexity-ask", "perplexity_ask"),
+        ("python /path/to/gmail_server.py", "gmail_server"),
+        ("node build/index.js", "index"),
+        ("https://localhost:8080/sse", "localhost_8080"),
+        ("/usr/local/bin/my-mcp-server", "my_mcp_server"),
+    ],
+)
+def test_generate_server_name(param, expected_name):
+    params = parse_params(param)
+    assert params is not None
+    assert generate_server_name(params) == expected_name
+
 
 # --------------------------------------------------------------------------- #
 # Helpers                                                                     #
 # --------------------------------------------------------------------------- #
 
 
+# noinspection PyTypeChecker
 def _b64(data: bytes) -> str:
     """Return a **str** base-64 representation (what the real MCP objects use)."""
     return base64.b64encode(data).decode()
