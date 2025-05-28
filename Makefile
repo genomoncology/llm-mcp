@@ -38,10 +38,20 @@ test: ## Test the code with pytest
 	@echo "🚀 Testing code: Running pytest"
 	@uv run python -m pytest -x --ff
 
+.PHONY: record
+record: ## Rerecord VCR cassettes
+	@echo "🚀 Recording VCR cassettes (new episodes)"
+	@uv run python -m pytest --record-mode=new_episodes
+
+.PHONY: rerecord
+rerecord: ## Rerecord VCR cassettes
+	@echo "🚀 Rerecording VCR cassettes (all)"
+	@uv run python -m pytest --record-mode=all
+
 .PHONY: cov
 cov: ## Generate HTML coverage report
 	@echo "🚀 Generating HTML coverage report"
-	@uv run python -m pytest --cov --record-mode=rewrite --cov-config=pyproject.toml --cov-report=html
+	@uv run python -m pytest --cov --record-mode=all --cov-config=pyproject.toml --cov-report=html
 	@uv run coverage report --show-missing && uv run coverage html
 
 .PHONY: build

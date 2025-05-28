@@ -27,7 +27,9 @@ def cli_result(cli_runner, data_dir, command: str) -> Result:
     command = command.replace("$data_dir", str(data_dir))
     args = shlex.split(command)[1:]
     result = cli_runner.invoke(llm_cli, args)
-    assert result.exit_code == 0
+    assert result.exit_code == 0, (
+        f"Run command failed: {command}: {result.output}"
+    )
     return result
 
 

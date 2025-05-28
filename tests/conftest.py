@@ -4,8 +4,6 @@ from pathlib import Path
 import llm
 import pytest
 
-pytestmark = pytest.mark.vcr(record_mode="new_episodes")
-
 
 @pytest.fixture(scope="module")
 def vcr_config():
