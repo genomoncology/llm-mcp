@@ -104,7 +104,15 @@ class TestManifestNormalization(TestCase):
             # Second tool should have default description
             self.assertEqual(cfg.tools[1].name, "tool-without-description")
             self.assertEqual(cfg.tools[1].description, "")
-            self.assertEqual(cfg.tools[1].inputSchema, {})
+            # Empty parameters are now converted to a proper schema with additionalProperties: false
+            self.assertEqual(
+                cfg.tools[1].inputSchema,
+                {
+                    "type": "object",
+                    "additionalProperties": False,
+                    "properties": {},
+                },
+            )
 
         finally:
             # Clean up the temporary file

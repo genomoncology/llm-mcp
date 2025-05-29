@@ -10,7 +10,7 @@ Feature: Create and manage toolboxes
 
   Scenario: Create toolbox with invalid name
     When I try to run "llm mcp toolboxes add data-analysis"
-    Then it should fail with "Toolbox names must start with a capital letter"
+    Then it should fail with "Invalid toolbox name"
 
   Scenario: Create duplicate toolbox
     Given I run "llm mcp toolboxes add TestBox"

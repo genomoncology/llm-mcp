@@ -5,7 +5,7 @@ from pathlib import Path
 
 import click
 
-from llm_mcp import store
+from llm_mcp import store, utils
 from llm_mcp.cli.main import mcp
 from llm_mcp.schema import ToolboxConfig, ToolboxTool
 
@@ -20,11 +20,26 @@ def toolboxes():
 @click.option("--description", help="Toolbox description")
 def add_toolbox(name: str, description: str | None):
     """Create a new toolbox."""
-    # Validate toolbox name
-    if not name[0].isupper():
-        raise click.ClickException(
-            "Toolbox names must start with a capital letter"
-        )
+    # Validate toolbox name using Pydantic
+    try:
+        # This will validate the name according to the Pydantic model's regex pattern
+        # ^[A-Z][a-zA-Z0-9_]*$
+        ToolboxConfig(name=name, description=description)
+    except ValueError as e:
+        from pydantic import ValidationError
+
+        # Extract a user-friendly message for pattern mismatch validation errors
+        if (
+            isinstance(e, ValidationError)
+            and e.errors()
+            and e.errors()[0]["type"] == "string_pattern_mismatch"
+        ):
+            raise click.ClickException(
+                "Invalid toolbox name: Must start with a capital letter and contain only letters, numbers, and underscores"
+            ) from e
+
+        # Fall back to the original error if it's not a pattern mismatch
+        raise click.ClickException(f"Invalid toolbox name: {e}") from e
 
     # Check if toolbox already exists
     if store.load_toolbox(name):
@@ -106,8 +121,27 @@ def _create_mcp_tool(
 
     # Verify tool exists in server
     if not any(t.name == tool_name for t in server_config.tools):
+        available_tools = [t.name for t in server_config.tools]
+
+        # Truncate long lists of tools to avoid overwhelming output
+        MAX_TOOLS_TO_SHOW = 15
+        if len(available_tools) > MAX_TOOLS_TO_SHOW:
+            # Show the first MAX_TOOLS_TO_SHOW tools and indicate there are more
+            shown_tools = available_tools[:MAX_TOOLS_TO_SHOW]
+            remaining_count = len(available_tools) - MAX_TOOLS_TO_SHOW
+            available_str = (
+                f"{', '.join(shown_tools)} ... (+{remaining_count} more)"
+            )
+        else:
+            available_str = (
+                ", ".join(available_tools)
+                if available_tools
+                else "No tools available"
+            )
+
         raise click.ClickException(
-            f"Tool '{tool_name}' not found in server '{server_name}'"
+            f"Tool '{tool_name}' not found in server '{server_name}'\n"
+            f"Available tools: {available_str}"
         )
 
     return ToolboxTool(
@@ -581,10 +615,12 @@ def _show_validation_summary(total_issues: int, fixed_issues: int, fix: bool):
 
 
 def _parse_mcp_reference(mcp_ref: str) -> tuple[str, str]:
-    """Parse an MCP reference into server and tool names."""
-    parts = mcp_ref.split("/")
-    if len(parts) != 2:
-        raise click.ClickException(
-            f"Invalid MCP reference: {mcp_ref}. Expected format: server_name/tool_name"
-        )
-    return parts[0], parts[1]
+    """Parse an MCP reference into server and tool names.
+
+    Delegates to the shared utility function, adapting exceptions to Click format.
+    """
+    try:
+        return utils.parse_mcp_reference(mcp_ref)
+    except ValueError as e:
+        # Convert the ValueError to a ClickException for better CLI feedback
+        raise click.ClickException(str(e)) from e

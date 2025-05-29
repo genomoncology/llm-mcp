@@ -30,10 +30,31 @@ def _create_config_from_manifest(
 
     # Normalize each tool entry to satisfy mcp.types.Tool
     for tool in tools:
+        # Check if 'parameters' was explicitly provided
+        parameters_explicitly_provided = "parameters" in tool
+
         # Convert 'parameters' to 'inputSchema' if present
-        tool.setdefault("inputSchema", tool.pop("parameters", {}))
+        parameters = tool.pop("parameters", {})
+
+        # Only apply strict schema if parameters were explicitly provided but empty
+        if parameters_explicitly_provided and parameters == {}:
+            # Empty parameters gets converted to a proper schema with additionalProperties: false
+            input_schema = {
+                "type": "object",
+                "additionalProperties": False,
+                "properties": {},
+            }
+        else:
+            # Use the provided parameters as is, preserving backward compatibility
+            # for tools that legitimately accept arbitrary kwargs
+            input_schema = parameters
+
+        # Set the normalized inputSchema
+        tool.setdefault("inputSchema", input_schema)
+
         # Clean up annotations if present
         tool.pop("annotations", None)
+
         # Ensure description has a default
         tool.setdefault("description", "")
 
@@ -101,6 +122,17 @@ def _handle_existing_server(
     raise DuplicateServer(f"Server {name!r} already exists")
 
 
+def _validate_server_args(
+    param_str: str | None, manifest_data: str | None
+) -> None:
+    """Validate server arguments for consistency."""
+    if param_str is None and manifest_data is None:
+        raise ValueError("Either param_str or manifest_data must be provided")
+
+    if param_str is not None and manifest_data is not None:
+        raise ValueError("Cannot provide both param_str and manifest_data")
+
+
 def add_server(
     param_str: str | None = None,
     *,
@@ -128,22 +160,24 @@ def add_server(
     cfg: ServerConfig | None = None
 
     # Validate inputs
-    if param_str is None and manifest_data is None:
-        raise ValueError("Either param_str or manifest_data must be provided")
-
-    if param_str is not None and manifest_data is not None:
-        raise ValueError("Cannot provide both param_str and manifest_data")
+    _validate_server_args(param_str, manifest_data)
 
     # Determine the mode and create initial config
     is_manifest_mode = manifest_data is not None
 
     if is_manifest_mode:
         # We've already validated that manifest_data is not None in this branch
-        assert manifest_data is not None
+        if manifest_data is None:
+            raise ValueError(
+                "Manifest data must be provided for manifest mode"
+            )
         cfg, name = _create_config_from_manifest(manifest_data, name)
     else:
         # We've already validated that param_str is not None in this branch
-        assert param_str is not None
+        if param_str is None:
+            raise ValueError(
+                "Parameter string must be provided for config creation"
+            )
         cfg, name = _create_config_from_live_server(param_str, name)
 
     # Check for existing server with this name
@@ -155,15 +189,20 @@ def add_server(
 
     # If we're in live server mode and haven't created the config yet, fetch tools
     if not is_manifest_mode and cfg is None:
-        assert param_str is not None
+        if param_str is None:
+            raise ValueError(
+                "Parameter string must be provided for live server mode"
+            )
         params = utils.parse_params(param_str)  # We validated this earlier
         # We should have already validated params is not None earlier
-        assert params is not None, "Server parameters must be valid"
+        if params is None:
+            raise ValueError("Server parameters must be valid")
         tools = transport.list_tools_sync(params)
         cfg = ServerConfig(name=name, parameters=params, tools=tools)
 
     # Ensure cfg is not None at this point
-    assert cfg is not None, "ServerConfig must be created before saving"
+    if cfg is None:
+        raise ValueError("ServerConfig must be created before saving")
 
     # Save the config
     store.save_server(cfg)

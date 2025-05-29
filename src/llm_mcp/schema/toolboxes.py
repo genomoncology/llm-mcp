@@ -28,7 +28,9 @@ class ToolboxTool(BaseModel):
 
     # Optional overrides
     name: str | None = Field(
-        None, description="Override tool name", pattern="^[a-zA-Z0-9_]+$"
+        None,
+        description="Override tool name",
+        pattern="^[a-zA-Z0-9_-]+$",  # Now matches MCP reference tool name pattern to allow hyphens
     )
     description: str | None = Field(
         None, description="Override tool description"

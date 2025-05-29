@@ -2,24 +2,25 @@
 
 import ast
 import importlib.util
+import inspect
 import sys
 from collections.abc import Callable
 from pathlib import Path
 from typing import Any
+from typing import Any as AnyType
 
 import llm
 
-from llm_mcp import store, transport
+from llm_mcp import store, transport, utils
 from llm_mcp.schema import ToolboxConfig, ToolboxTool
+from llm_mcp.transport.bg_runner import run_async
 
 
 def build_toolbox_class(config: ToolboxConfig) -> type[llm.Toolbox]:
     """Dynamically create a Toolbox class from configuration."""
 
     # Create base class with config
-    # Use a proper Dict type annotation to avoid mypy collection error
-    from typing import Any as AnyType
-
+    # Use AnyType to avoid mypy collection error
     class_attrs: dict[str, AnyType] = {
         "name": config.name,
         "__doc__": config.description or f"Dynamic toolbox: {config.name}",
@@ -142,15 +143,20 @@ def _create_mcp_method(tool: ToolboxTool) -> Callable:
 
 def _create_function_method(tool: ToolboxTool) -> Callable:
     """Create a method from Python function code."""
-
     if not tool.code:
         raise ValueError("Function code is required for function tools")
 
-    # Parse the code to extract the function
     try:
+        # Get the function code
         code = _get_function_code(tool.code)
+
+        # Extract function name if not provided in the tool
         func_name = _extract_function_name_from_tool(tool, code)
-        func = _load_function_from_code(code, func_name, tool)
+
+        # Load the function from code
+        func, module_name = _load_function_from_code(code, func_name, tool)
+
+        # Create a wrapper method
         method = _create_wrapper_method(func)
 
         # Set metadata
@@ -160,10 +166,19 @@ def _create_function_method(tool: ToolboxTool) -> Callable:
             or func.__doc__
             or f"Dynamic function: {func_name}"
         )
+
+        # Now that we have the wrapper with all necessary references,
+        # we can safely clean up the module to prevent sys.modules pollution
+        _cleanup_dynamic_module(module_name)
+
+        # Return the created method
+        return method
     except Exception as e:
         raise ValueError(f"Error creating function method: {e}") from e
     else:
-        return method
+        # This will never execute because we always return in the try block
+        # But we include it to satisfy the linter
+        pass
 
 
 def _get_function_code(code_or_path: str) -> str:
@@ -187,10 +202,23 @@ def _extract_function_name_from_tool(tool: ToolboxTool, code: str) -> str:
     raise ValueError("No function found in the provided code")
 
 
+def _cleanup_dynamic_module(module_name: str) -> None:
+    """Clean up a dynamically loaded module from sys.modules.
+
+    This prevents pollution of sys.modules with temporary modules.
+    """
+    if module_name in sys.modules:
+        del sys.modules[module_name]
+
+
 def _load_function_from_code(
     code: str, func_name: str, tool: ToolboxTool
-) -> Callable:
-    """Load a function from code into a temporary module."""
+) -> tuple[Callable, str]:
+    """Load a function from code into a temporary module.
+
+    Returns:
+        A tuple of (function, module_name) where module_name can be used to clean up later
+    """
     # Create a temporary module
     module_name = f"_toolbox_dynamic_module_{id(tool)}"
     spec = importlib.util.spec_from_loader(module_name, loader=None)
@@ -203,40 +231,60 @@ def _load_function_from_code(
     # Execute the code in the module's namespace
     exec(code, module.__dict__)  # noqa: S102
 
-    # Get and return the function
-    return getattr(module, func_name)
+    # Get the function
+    func = getattr(module, func_name)
+    return func, module_name
 
 
 def _create_wrapper_method(func: Callable) -> Callable[..., Any]:
-    """Create a wrapper method that calls the function."""
+    """Create a wrapper method that calls the function.
 
-    # Create a properly typed wrapper function that satisfies mypy
-    class MethodWrapper:
-        @staticmethod
-        def get_wrapper(f: Callable) -> Callable[..., Any]:
-            def method(self: Any, **kwargs: Any) -> Any:
-                return f(**kwargs)
+    Supports both synchronous and asynchronous functions.
 
-            return method
+    For async functions, the coroutine is automatically run using the background runner,
+    so the LLM always gets a concrete value rather than a coroutine object.
+    """
+    # Check if the function is a coroutine function (async def)
+    if inspect.iscoroutinefunction(func):
+        # Create a sync wrapper that runs the async function
+        def wrapper(self: Any, **kwargs: Any) -> Any:
+            # Run the coroutine and return its concrete result
+            async def async_inner() -> Any:
+                return await func(**kwargs)
 
-    # Use the wrapper to create and return the method
-    return MethodWrapper.get_wrapper(func)
+            return run_async(async_inner())
+
+        # Preserve the original function's docstring
+        wrapper.__doc__ = func.__doc__
+        return wrapper
+    else:
+        # For regular synchronous functions
+        def sync_method(self: Any, **kwargs: Any) -> Any:
+            return func(**kwargs)
+
+        # Preserve the original function's docstring
+        sync_method.__doc__ = func.__doc__
+        return sync_method
 
 
 def _create_toolbox_class_method(tool: ToolboxTool) -> Callable:
-    """Create a method that delegates to another toolbox class."""
+    """Create a method that delegates to another toolbox class.
+
+    This will support toolbox composition, where one toolbox can embed another.
+    """
     # This is a placeholder for future implementation
-    raise NotImplementedError("Toolbox class tools are not yet implemented")
+    raise NotImplementedError(
+        "Toolbox class tools are not yet supported. "
+        "This feature will allow you to embed one toolbox inside another (composition)."
+    )
 
 
 def _parse_mcp_reference(mcp_ref: str) -> tuple[str, str]:
-    """Parse an MCP reference into server and tool names."""
-    parts = mcp_ref.split("/")
-    if len(parts) != 2:
-        raise ValueError(
-            f"Invalid MCP reference: {mcp_ref}. Expected format: server_name/tool_name"
-        )
-    return parts[0], parts[1]
+    """Parse an MCP reference into server and tool names.
+
+    Delegates to the shared utility function.
+    """
+    return utils.parse_mcp_reference(mcp_ref)
 
 
 # Type for validation fix callbacks
@@ -367,6 +415,66 @@ def _validate_mcp_tool(
     return issues
 
 
+def _validate_function_code(
+    code: str, function_name: str | None = None
+) -> list[str]:
+    """Validate function code and return a list of issues.
+
+    Args:
+        code: The Python code to validate
+        function_name: Optional name of the function to check for
+
+    Returns:
+        List of error messages, empty if code is valid
+    """
+    issues = []
+
+    # First check syntax
+    try:
+        compile(code, "<function>", "exec")
+    except SyntaxError as e:
+        issues.append(f"Syntax error: {e}")
+        return issues
+
+    # Parse the AST to find functions
+    try:
+        tree = ast.parse(code)
+
+        # Find all function definitions
+        function_defs = [
+            node
+            for node in ast.walk(tree)
+            if isinstance(node, ast.FunctionDef)
+        ]
+        available_functions = [func.name for func in function_defs]
+
+        # If a specific function name was requested, check it exists
+        if function_name and not any(
+            f == function_name for f in available_functions
+        ):
+            if available_functions:
+                issues.append(
+                    f"Function '{function_name}' not found. "
+                    f"Available functions: {', '.join(available_functions)}"
+                )
+            else:
+                issues.append(
+                    f"Function '{function_name}' not found. "
+                    "No functions defined in the provided code."
+                )
+
+        # Check if there are no function definitions at all
+        elif not function_defs:
+            issues.append(
+                "No function definitions found in the provided code."
+            )
+
+    except Exception as e:
+        issues.append(f"Error analyzing code: {e}")
+
+    return issues
+
+
 def _validate_function_tool(
     tool: ToolboxTool, toolbox: ToolboxConfig
 ) -> list[ValidationIssue]:
@@ -389,22 +497,24 @@ def _validate_function_tool(
         )
         return issues
 
-    # Verify function code is valid Python
-    try:
-        compile(tool.code, "<function>", "exec")
-    except SyntaxError as e:
+    # Perform comprehensive validation of the function code
+    function_name = tool.function_name
+    validation_issues = _validate_function_code(tool.code, function_name)
+
+    if validation_issues:
 
         def fix_callback() -> None:
             _fix_remove_tool(toolbox, tool)
 
-        issues.append(
-            ValidationIssue(
-                tool=tool,
-                severity=ValidationIssue.SEVERITY_ERROR,
-                message=f"Syntax error in function code: {e}",
-                fix_callback=fix_callback,
+        for issue in validation_issues:
+            issues.append(
+                ValidationIssue(
+                    tool=tool,
+                    severity=ValidationIssue.SEVERITY_ERROR,
+                    message=issue,
+                    fix_callback=fix_callback,
+                )
             )
-        )
 
     return issues
 
