@@ -76,35 +76,46 @@ def list_servers() -> list[str]:
 
 def toolboxes_dir() -> Path:
     """Get the directory where toolbox configs are stored."""
-    toolboxes = mcp_dir() / "toolboxes"
-    toolboxes.mkdir(parents=True, exist_ok=True)
-    return toolboxes
+    path = mcp_dir() / "toolboxes"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def _toolbox_path(name: str) -> Path:
+    return toolboxes_dir() / f"{name}.json"
 
 
 def save_toolbox(config: ToolboxConfig) -> Path:
-    """Save a toolbox configuration."""
-    target_path = toolboxes_dir() / f"{config.name}.json"
-    target_path.write_text(config.model_dump_json(indent=2))
-    return target_path
+    """Save a toolbox configuration to disk."""
+    path = _toolbox_path(config.name)
+    # `exclude_unset` drops the discriminator when only default fields
+    # are set, so we must NOT use it here.
+    cfg_json = config.model_dump_json(
+        indent=2,
+        exclude_none=True,
+        exclude_defaults=False,  # keep "kind"
+        by_alias=True,
+    )
+    path.write_text(cfg_json)
+    return path
 
 
 def load_toolbox(name: str) -> ToolboxConfig | None:
-    """Load a toolbox configuration."""
-    path = toolboxes_dir() / f"{name}.json"
-    if path.is_file():
-        return ToolboxConfig.model_validate_json(path.read_text())
-    return None
+    """Load a toolbox configuration from disk."""
+    path = _toolbox_path(name)
+    if not path.exists():
+        return None
+    return ToolboxConfig.model_validate_json(path.read_text())
 
 
 def remove_toolbox(name: str) -> bool:
-    """Remove a toolbox configuration."""
-    path = toolboxes_dir() / f"{name}.json"
+    """Remove a toolbox configuration from disk."""
     try:
-        path.unlink()
-        success = True
+        _toolbox_path(name).unlink()
     except FileNotFoundError:
-        success = False
-    return success
+        return False
+    else:
+        return True
 
 
 def list_toolboxes() -> list[str]:

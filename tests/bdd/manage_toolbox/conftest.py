@@ -93,12 +93,24 @@ def check_toolbox_tool_count(toolbox_config: ToolboxConfig, tool_count: int):
 def check_toolbox_tool(
     toolbox_config: ToolboxConfig, tool_name: str, description: str
 ):
+    # Helper function to get the effective name of a tool in our new schema
+    def get_tool_name(t):
+        # First check if there's an explicit override name
+        if t.name:
+            return t.name
+        # If it's an MCPToolRef, use the tool field
+        elif hasattr(t, "tool"):
+            return t.tool
+        # For other tool types, try these attributes
+        elif hasattr(t, "attr"):
+            return t.attr
+        elif hasattr(t, "method"):
+            return t.method
+        # Fallback
+        return None
+
     tool = next(
-        (
-            t
-            for t in toolbox_config.tools
-            if (t.name or t.tool_name) == tool_name
-        ),
+        (t for t in toolbox_config.tools if get_tool_name(t) == tool_name),
         None,
     )
     assert tool is not None, f"Tool {tool_name} not found"

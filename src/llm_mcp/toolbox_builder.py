@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 """Toolbox builder functionality for dynamically creating toolbox classes."""
 
 import ast

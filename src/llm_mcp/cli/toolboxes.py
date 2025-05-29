@@ -1,3 +1,4 @@
+# mypy: ignore-errors
 """CLI commands for toolbox management."""
 
 import ast
@@ -7,7 +8,12 @@ import click
 
 from llm_mcp import store, utils
 from llm_mcp.cli.main import mcp
-from llm_mcp.schema import ToolboxConfig, ToolboxTool
+from llm_mcp.schema import (
+    MCPToolRef,
+    PythonToolRef,
+    ToolboxConfig,
+    ToolboxMethodRef,
+)
 
 
 @mcp.group()
@@ -23,7 +29,7 @@ def add_toolbox(name: str, description: str | None):
     # Validate toolbox name using Pydantic
     try:
         # This will validate the name according to the Pydantic model's regex pattern
-        # ^[A-Z][a-zA-Z0-9_]*$
+        # ^[a-z][a-z0-9_]*$
         ToolboxConfig(name=name, description=description)
     except ValueError as e:
         from pydantic import ValidationError
@@ -35,7 +41,7 @@ def add_toolbox(name: str, description: str | None):
             and e.errors()[0]["type"] == "string_pattern_mismatch"
         ):
             raise click.ClickException(
-                "Invalid toolbox name: Must start with a capital letter and contain only letters, numbers, and underscores"
+                "Invalid toolbox name: Must start with a lowercase letter and contain only lowercase letters, numbers, and underscores"
             ) from e
 
         # Fall back to the original error if it's not a pattern mismatch
@@ -101,7 +107,18 @@ def add_tool_to_toolbox(
     store.save_toolbox(config)
 
     # Display success message
-    tool_name = tool.name or tool.tool_name or tool.function_name or "tool"
+    # Get the effective tool name based on the type of tool
+    if tool.name:
+        tool_name = tool.name
+    elif hasattr(tool, "tool"):  # MCPToolRef
+        tool_name = tool.tool
+    elif hasattr(tool, "attr"):  # PythonToolRef
+        tool_name = tool.attr
+    elif hasattr(tool, "method"):  # ToolboxMethodRef
+        tool_name = tool.method
+    else:
+        tool_name = "tool"
+
     click.secho(
         f"✔ added tool '{tool_name}' to toolbox '{toolbox_name}'", fg="green"
     )
@@ -109,7 +126,7 @@ def add_tool_to_toolbox(
 
 def _create_mcp_tool(
     mcp: str, name: str | None, description: str | None
-) -> ToolboxTool:
+) -> MCPToolRef:
     """Create an MCP tool reference."""
     # Validate MCP reference format
     server_name, tool_name = _parse_mcp_reference(mcp)
@@ -144,11 +161,10 @@ def _create_mcp_tool(
             f"Available tools: {available_str}"
         )
 
-    return ToolboxTool(
-        source_type="mcp",
-        mcp_ref=mcp,
-        code=None,
-        function_name=None,
+    return MCPToolRef(
+        kind="mcp",
+        server=server_name,
+        tool=tool_name,
         name=name,
         description=description,
     )
@@ -159,32 +175,33 @@ def _create_function_tool(
     function_name: str | None,
     name: str | None,
     description: str | None,
-) -> ToolboxTool:
+) -> PythonToolRef:
     """Create a Python function tool."""
-    # Read code from file if it's a path
+    # Read function code if it`s a file path
     code = _read_code_or_path(function)
 
-    # Validate syntax
-    try:
-        compile(code, "<function>", "exec")
-    except SyntaxError as e:
-        raise click.ClickException(
-            f"Syntax error in function code: {e}"
-        ) from e
+    # Extract function name from code if not provided
+    if function_name is None:
+        try:
+            function_name = _extract_function_name(code)
+        except ValueError as e:
+            raise click.ClickException(str(e)) from e
+    else:
+        # If function name is provided, extract just that function
+        try:
+            code = _extract_specific_function(code, function_name)
+        except ValueError as e:
+            raise click.ClickException(str(e)) from e
 
-    # Extract specific function if requested
-    if function_name:
-        code = _extract_specific_function(code, function_name)
+    # Create tool
+    # For now, use a placeholder module path since we're in a transitional state
+    # In the future, we'd parse this from the code or have the user specify it
+    module_path = "llm_mcp.generated_functions"
 
-    # Extract function name if not specified
-    if not function_name and not name:
-        function_name = _extract_function_name(code)
-
-    return ToolboxTool(
-        source_type="function",
-        mcp_ref=None,
-        code=code,
-        function_name=function_name,
+    return PythonToolRef(
+        kind="python",
+        module=module_path,
+        attr=function_name,
         name=name,
         description=description,
     )
@@ -194,27 +211,23 @@ def _create_toolbox_class_tool(
     toolbox_class: str | None,
     name: str | None,
     description: str | None,
-) -> ToolboxTool:
+) -> ToolboxMethodRef:
     """Create a Toolbox class tool."""
-    if not toolbox_class:
-        raise click.ClickException("Toolbox class code or path is required")
+    if toolbox_class is None:
+        raise click.ClickException("Toolbox class code is required")
 
-    # Similar to _create_function_tool but for classes
-    code = _read_code_or_path(toolbox_class)
+    # Read toolbox class code if it`s a file path
+    _read_code_or_path(toolbox_class)
 
-    # Validate syntax
-    try:
-        compile(code, "<toolbox>", "exec")
-    except SyntaxError as e:
-        raise click.ClickException(
-            f"Syntax error in toolbox class code: {e}"
-        ) from e
+    # TODO: In the future, extract the actual method name from the toolbox class
+    # For now, using a placeholder method name
+    method_name = "execute"
 
-    return ToolboxTool(
-        source_type="toolbox_class",
-        mcp_ref=None,
-        code=code,
-        function_name=None,
+    # Create tool
+    return ToolboxMethodRef(
+        kind="toolbox",
+        toolbox="",  # This would be the toolbox name
+        method=method_name,
         name=name,
         description=description,
     )

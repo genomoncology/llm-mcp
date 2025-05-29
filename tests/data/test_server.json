@@ -1,0 +1,10 @@
+{
+  "name": "test_server",
+  "tools": [
+    {
+      "name": "test_tool",
+      "description": "Test tool",
+      "parameters": {}
+    }
+  ]
+}
