@@ -85,7 +85,12 @@ def _parse_command_line(line: str) -> tuple[dict[str, str], list[str]]:
         token = tokens[i]
 
         # Check if this looks like an env var (KEY=VALUE pattern)
-        if "=" in token and not token.startswith("-"):
+        # Exclude both short flags (-f=val) and long flags (--format=json)
+        if (
+            "=" in token
+            and not token.startswith("-")
+            and not token.startswith("--")
+        ):
             # But only treat as env var if key looks valid
             key, val = token.split("=", 1)
             if key and key.replace("_", "").isalnum():

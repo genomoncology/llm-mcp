@@ -135,4 +135,5 @@ cython_debug/
 # PyCharm
 .idea/
 
+
 tests/data/logs.db

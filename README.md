@@ -82,12 +82,13 @@ llm -T tool_name "your prompt" --td
   - Convert MCP tools to LLM tools
   - Support for stdio and HTTP servers
 
-- 🚧 v0.1.0 - Advanced features
+- 🚧 v0.1.0 - Initial Checklist
   - Remote server authentication (tokens, OAuth)
   - `llm mcp toolboxes` - create and manage tool collections
   - Support vanilla Python functions as tools
   - `llm mcp proxy` - start MCP proxy server for toolboxes
   - Proxy authentication
+  - True async support
 
 ## Resources
 

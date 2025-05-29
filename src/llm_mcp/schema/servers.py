@@ -8,7 +8,7 @@ class ServerConfig(BaseModel):
     name: str = Field(
         ...,
         description="Name of the server which maps to server file name.",
-        pattern="^[a-z0-9_]+$",
+        pattern="^[a-z0-9_-]+$",
     )
     parameters: ServerParameters = Field(
         ...,

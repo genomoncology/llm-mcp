@@ -66,6 +66,10 @@ warn_return_any = true
 warn_unused_ignores = true
 show_error_codes = true
 
+[[tool.mypy.overrides]]
+module = "llm_mcp.toolbox_builder"
+warn_return_any = false
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "--import-mode=importlib"

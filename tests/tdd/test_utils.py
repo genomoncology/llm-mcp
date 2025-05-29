@@ -46,6 +46,14 @@ def test_as_kwargs_timedelta_conversion():
             ),
         ),
         (
+            "node server.js --format=json --port=8080",
+            StdioServerParameters(
+                command="node",
+                args=["server.js", "--format=json", "--port=8080"],
+                env=None,
+            ),
+        ),
+        (
             "",
             None,
         ),
