@@ -44,14 +44,11 @@ def add_server(
         )
 
     try:
-        cfg = manager.add_server(
-            param if manifest is None else None,
-            name=name,
-            overwrite=overwrite,
+        cfg = manager.create_server(
+            param if manifest is None else manifest,
             exist_ok=exist_ok,
-            manifest_data=manifest,
         )
-    except manager.DuplicateServer as e:
+    except manager.errors.DuplicateServer as e:
         raise click.ClickException(f"Server {name!r} already exists") from e
     except ValueError as e:
         raise click.ClickException(str(e)) from e
