@@ -7,6 +7,7 @@ import os
 from pathlib import Path
 from typing import Any
 
+from mcp.types import Tool as MCPTool
 from pydantic import BaseModel, Field
 
 from .. import store
@@ -24,12 +25,26 @@ class Tool(BaseModel):
 
 
 def list_servers() -> list[str]:
-    """List all available servers."""
+    """List all available servers.
+
+    Returns:
+        list[str]: A list of server names.
+    """
     return store.list_servers()
 
 
 def get_server(name: str) -> ServerConfig:
-    """Get a server by name."""
+    """Get a server by name.
+
+    Args:
+        name: The name of the server to retrieve.
+
+    Returns:
+        ServerConfig: The server configuration.
+
+    Raises:
+        ServerNotFound: If the server does not exist.
+    """
     cfg = store.load_server(name)
     if cfg is None:
         raise ServerNotFound(f"Server '{name}' not found")
@@ -37,7 +52,19 @@ def get_server(name: str) -> ServerConfig:
 
 
 def create(manifest: str | Path, *, exist_ok: bool = False) -> ServerConfig:  # noqa: C901
-    """Create a new server from a manifest."""
+    """Create a new server from a manifest.
+
+    Args:
+        manifest: Path to a manifest file or a JSON string containing the manifest.
+        exist_ok: If True, don't raise an error if the server already exists.
+
+    Returns:
+        ServerConfig: The created server configuration.
+
+    Raises:
+        DuplicateServer: If the server already exists and exist_ok is False.
+        ValueError: If the manifest is invalid.
+    """
     manifest_str = str(manifest)  # Convert Path to str if needed
 
     # Import here to avoid circular imports
@@ -218,42 +245,27 @@ def create(manifest: str | Path, *, exist_ok: bool = False) -> ServerConfig:  # 
 
 
 def remove(name: str) -> None:
-    """Remove a server by name."""
+    """Remove a server by name.
+
+    Args:
+        name: The name of the server to remove.
+
+    Raises:
+        ServerNotFound: If the server does not exist.
+    """
     if not store.remove_server(name):
         raise ServerNotFound(f"Server '{name}' not found")
 
 
-def _create_config_from_manifest(
-    manifest_path_or_content: str,
-) -> tuple[ServerConfig, str]:
-    """
-    Create a ServerConfig from a manifest file path or JSON string.
-
-    This function normalizes the manifest data, converting from the OpenAPI-style
-    format to our internal schema format.
+def _normalize_tools_data(tools_data: list[dict[str, Any]]) -> list[MCPTool]:
+    """Normalize tool data from a manifest into MCPTool objects.
 
     Args:
-        manifest_path_or_content: Either a path to a JSON file or a JSON string
+        tools_data: List of tool data dictionaries from a manifest.
 
     Returns:
-        Tuple of (ServerConfig, server_name)
+        list[MCPTool]: List of normalized MCPTool objects.
     """
-    # Determine if input is a file path or JSON string
-    if os.path.exists(
-        manifest_path_or_content
-    ) and manifest_path_or_content.endswith(".json"):
-        with open(manifest_path_or_content) as f:
-            manifest_data = json.load(f)
-    else:
-        manifest_data = json.loads(manifest_path_or_content)
-
-    # Extract the server name
-    server_name = manifest_data.get("name")
-    if not server_name:
-        raise ValueError("Manifest must contain a 'name' field")
-
-    # Normalize tools
-    tools_data = manifest_data.get("tools", [])
     normalized_tools = []
 
     for tool_data in tools_data:
@@ -278,9 +290,6 @@ def _create_config_from_manifest(
         if "annotations" in tool_data:
             tool_data.pop("annotations")
 
-        # Create an MCPTool object and add it to the list
-        from mcp.types import Tool as MCPTool
-
         # Defensive typing - ensure tool_data has the right types
         tool_name = tool_data.get("name", "")
         if not isinstance(tool_name, str):
@@ -299,6 +308,46 @@ def _create_config_from_manifest(
             name=tool_name, description=description, inputSchema=schema
         )
         normalized_tools.append(tool)
+
+    return normalized_tools
+
+
+def _create_config_from_manifest(
+    manifest_path_or_content: str,
+) -> tuple[ServerConfig, str]:
+    """
+    Create a ServerConfig from a manifest file path or JSON string.
+
+    This function normalizes the manifest data, converting from the OpenAPI-style
+    format to our internal schema format.
+
+    Args:
+        manifest_path_or_content: Either a path to a JSON file or a JSON string
+
+    Returns:
+        Tuple of (ServerConfig, server_name)
+
+    Raises:
+        ValueError: If the manifest is invalid or missing required fields.
+        json.JSONDecodeError: If the manifest string is not valid JSON.
+    """
+    # Determine if input is a file path or JSON string
+    if os.path.exists(
+        manifest_path_or_content
+    ) and manifest_path_or_content.endswith(".json"):
+        with open(manifest_path_or_content) as f:
+            manifest_data = json.load(f)
+    else:
+        manifest_data = json.loads(manifest_path_or_content)
+
+    # Extract the server name
+    server_name = manifest_data.get("name")
+    if not server_name:
+        raise ValueError("Manifest must contain a 'name' field")
+
+    # Normalize tools
+    tools_data = manifest_data.get("tools", [])
+    normalized_tools = _normalize_tools_data(tools_data)
 
     # Create and return a proper ServerConfig
     from ..schema.parameters import RemoteServerParameters

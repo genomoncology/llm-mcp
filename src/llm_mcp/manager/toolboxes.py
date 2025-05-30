@@ -25,6 +25,18 @@ def _read_default() -> str | None:
 
 # ───────── CRUD ────────────────────────────────────────────────────
 def create(name: str, *, description: str | None = None) -> ToolboxConfig:
+    """Create a new toolbox.
+
+    Args:
+        name: The name of the toolbox to create.
+        description: Optional description for the toolbox.
+
+    Returns:
+        ToolboxConfig: The created toolbox configuration.
+
+    Raises:
+        ToolboxExists: If a toolbox with the given name already exists.
+    """
     if store.load_toolbox(name):
         raise err.ToolboxExists(f"Toolbox '{name}' already exists")
     cfg = ToolboxConfig(name=name, description=description)
@@ -33,6 +45,16 @@ def create(name: str, *, description: str | None = None) -> ToolboxConfig:
 
 
 def remove(name: str) -> None:
+    """Remove a toolbox by name.
+
+    If the toolbox being removed is set as the default, the default setting will be cleared.
+
+    Args:
+        name: The name of the toolbox to remove.
+
+    Raises:
+        ToolboxNotFound: If the toolbox does not exist.
+    """
     if not store.remove_toolbox(name):
         raise err.ToolboxNotFound(f"Toolbox '{name}' not found")
     # clear default if it pointed to this one
@@ -42,10 +64,26 @@ def remove(name: str) -> None:
 
 # `list` shadows the builtin - give it a clear name
 def list_toolboxes() -> builtins.list[str]:
+    """List all available toolboxes.
+
+    Returns:
+        list[str]: A list of toolbox names.
+    """
     return store.list_toolboxes()
 
 
 def get_toolbox(name: str) -> ToolboxConfig:
+    """Get a toolbox by name.
+
+    Args:
+        name: The name of the toolbox to retrieve.
+
+    Returns:
+        ToolboxConfig: The toolbox configuration.
+
+    Raises:
+        ToolboxNotFound: If the toolbox does not exist.
+    """
     cfg = store.load_toolbox(name)
     if cfg is None:
         raise err.ToolboxNotFound(f"Toolbox '{name}' not found")
@@ -54,6 +92,20 @@ def get_toolbox(name: str) -> ToolboxConfig:
 
 # ───────── Tools inside a toolbox ──────────────────────────────────
 def add_tool(tb_name: str, tool: ToolRef) -> ToolboxConfig:
+    """Add a tool to a toolbox.
+
+    Args:
+        tb_name: The name of the toolbox to add the tool to.
+        tool: The tool reference to add.
+
+    Returns:
+        ToolboxConfig: The updated toolbox configuration.
+
+    Raises:
+        ToolboxNotFound: If the toolbox does not exist.
+        ToolExists: If a tool with the same name already exists in the toolbox.
+        ValueError: If the tool's public name cannot be determined.
+    """
     cfg = get_toolbox(tb_name)
     public_name = (
         tool.name
@@ -84,6 +136,19 @@ def add_tool(tb_name: str, tool: ToolRef) -> ToolboxConfig:
 
 
 def remove_tool(tb_name: str, public_name: str) -> ToolboxConfig:
+    """Remove a tool from a toolbox.
+
+    Args:
+        tb_name: The name of the toolbox to remove the tool from.
+        public_name: The public name of the tool to remove.
+
+    Returns:
+        ToolboxConfig: The updated toolbox configuration.
+
+    Raises:
+        ToolboxNotFound: If the toolbox does not exist.
+        ToolNotFound: If the tool does not exist in the toolbox.
+    """
     cfg = get_toolbox(tb_name)
     new_tools = [
         t
@@ -107,20 +172,50 @@ def remove_tool(tb_name: str, public_name: str) -> ToolboxConfig:
 
 # ───────── Default toolbox helpers ─────────────────────────────────
 def set_default(tb_name: str) -> None:
+    """Set a toolbox as the default.
+
+    Args:
+        tb_name: The name of the toolbox to set as default.
+
+    Raises:
+        ToolboxNotFound: If the toolbox does not exist.
+    """
     get_toolbox(tb_name)  # ensure it exists
     _write_default(tb_name)
 
 
 def clear_default() -> None:
+    """Clear the default toolbox setting.
+
+    After calling this, there will be no default toolbox.
+    """
     _write_default(None)
 
 
 def get_default() -> str | None:
+    """Get the name of the default toolbox.
+
+    Returns:
+        str | None: The name of the default toolbox, or None if no default is set.
+    """
     return _read_default()
 
 
 # ───────── Validation ─────────────────────────────────────────────
 def validate(tb_name: str) -> builtins.list[str]:
+    """Validate a toolbox configuration.
+
+    Checks for issues such as missing servers, duplicate tool names, etc.
+
+    Args:
+        tb_name: The name of the toolbox to validate.
+
+    Returns:
+        list[str]: A list of validation problems, empty if no problems found.
+
+    Raises:
+        ToolboxNotFound: If the toolbox does not exist.
+    """
     cfg = get_toolbox(tb_name)
     problems: builtins.list[str] = []
 
