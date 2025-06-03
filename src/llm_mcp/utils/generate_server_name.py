@@ -64,13 +64,34 @@ def _generate_remote_server_name(params: RemoteServerParameters) -> str:
 
 
 def _extract_npx_name(args: list[str]) -> str:
-    """Extract name from npx command."""
+    """Return a readable, vendor-agnostic name for an **npx** package."""
+
+    # Skip the auto-approve flag `-y` if present
     pkg = args[0] if args[0] != "-y" else (args[1] if len(args) > 1 else "")
+
+    # Remove a trailing version suffix  (e.g. "@latest", "@1.2.3")
+    if "@" in pkg[1:]:
+        pkg, _ = pkg.rsplit("@", 1)
+
+    # ── Scoped packages ────────────────────────────────────────────────────
     if pkg.startswith("@"):
-        # @modelcontextprotocol/server-filesystem -> filesystem
-        name = pkg.split("/")[-1].replace("server-", "").replace("mcp-", "")
-        return to_snake_case(name)
-    return to_snake_case(pkg)
+        scope, _, raw_name = pkg[1:].partition("/")  # "@scope/name"
+        raw_name = raw_name or scope  # handle "@foo"
+
+        clean_name = (
+            raw_name.replace("server-", "").replace("mcp-", "")
+        ) or "mcp"
+
+        # Heuristic: prepend the scope **only** when the name is a single
+        # short token - this avoids “wonderwhy_er_desktop_commander” while
+        # still giving us “playwright_mcp”.
+        include_scope = "_" not in clean_name and len(clean_name) <= 5
+        if include_scope:
+            return to_snake_case(f"{scope}_{clean_name}")
+        return to_snake_case(clean_name)
+
+    # ── Un-scoped packages ────────────────────────────────────────────────
+    return to_snake_case(pkg.replace("server-", "").replace("mcp-", ""))
 
 
 def _extract_uvx_name(args: list[str]) -> str:
@@ -146,6 +167,8 @@ def _generate_stdio_server_name(params: StdioServerParameters) -> str:
 
 def to_snake_case(text: str) -> str:
     """Convert text to snake_case."""
+    # Strip any stray '@' (shouldn't exist, but keeps the helper generic)
+    text = text.replace("@", "")
     # Replace hyphens and spaces with underscores
     text = text.replace("-", "_").replace(" ", "_")
     # Handle camelCase and PascalCase
