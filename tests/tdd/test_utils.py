@@ -67,6 +67,27 @@ def test_convert(param, expected):
         ("node build/index.js", "index"),
         ("https://localhost:8080/sse", "localhost_8080"),
         ("/usr/local/bin/my-mcp-server", "my_mcp_server"),
+        # new regression cases for npx scoped packages with version suffixes
+        ("npx @playwright/mcp@latest", "playwright_mcp"),
+        ("npx -y @playwright/mcp@1.2.3 extra", "playwright_mcp"),
+        ("npx @wonderwhy-er/desktop-commander", "desktop_commander"),
+        ("npx @wonderwhy-er/desktop-commander@1.2.3", "desktop_commander"),
+        ("npx @scope/short", "scope_short"),
+        ("npx @scope/long_name", "long_name"),
+        (
+            "npx @scope/short_name_with_underscore",
+            "short_name_with_underscore",
+        ),
+        (
+            "npx @scope/very_long_name_that_exceeds_five_chars",
+            "very_long_name_that_exceeds_five_chars",
+        ),
+        ("npx @scope/short1", "short1"),
+        ("npx @scope/short12", "short12"),
+        ("npx @scope/short123", "short123"),
+        ("npx @scope/short1234", "short1234"),
+        ("npx @scope/short12345", "short12345"),
+        ("npx @scope/short123456", "short123456"),
     ],
 )
 def test_generate_server_name(param, expected_name):
